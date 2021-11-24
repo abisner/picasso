@@ -127,6 +127,12 @@ template <class T, int N>
 struct Vector;
 template <class T, int N>
 struct VectorView;
+template <class T, int M, int N, int P, class Func>
+struct Tensor3Expression;
+template <class T, int M, int N, int P>
+struct Tensor3;
+template <class T, int M, int N, int P>
+struct Tensor3View;
 
 //---------------------------------------------------------------------------//
 // Type traits.
@@ -183,9 +189,38 @@ struct is_vector : public is_vector_impl<typename std::remove_cv<T>::type>::type
 {
 };
 
+// Tensor
+template <class>
+struct is_tensor3_impl : public std::false_type
+{
+};
+
+template<class T, int M, int N, int P>
+struct is_tensor3_impl<Tensor3<T, M, N, P>> : public std::true_type
+{
+};
+
+template<class T, int M, int N, int P>
+struct is_tensor3_impl<Tensor3View<T, M, N, P>> : public std::true_type
+{
+};
+
+template <class T>
+struct is_tensor3 : public is_tensor3_impl<typename std::remove_cv<T>::type>::type
+{
+};
+
 //---------------------------------------------------------------------------//
 // Expression creation functions.
 //---------------------------------------------------------------------------//
+// Tensor3
+template <class T, int M, int N, int P, class Func>
+KOKKOS_INLINE_FUNCTION Tensor3Expression<T, M, N, P, Func>
+createTensor3Expression( const Func& f )
+{
+    return Tensor3Expression<T, M, N, P, Func>( f );
+}
+
 // Matrix
 template <class T, int M, int N, class Func>
 KOKKOS_INLINE_FUNCTION MatrixExpression<T, M, N, Func>
@@ -205,6 +240,64 @@ createVectorExpression( const Func& f )
 //---------------------------------------------------------------------------//
 // Expression containers.
 //---------------------------------------------------------------------------//
+// Tensor3 expression container.
+template <class T, int M, int N, int P, class Func>
+struct Tensor3Expression
+{
+    static constexpr int extent_0 = M;
+    static constexpr int extent_1 = N;
+    static constexpr int extent_2 = P;
+
+    using value_type = T;
+    using non_const_value_type = typename std::remove_cv<T>::type;
+
+    using eval_type = Tensor3<T, M, N, P>;
+    using copy_type = Tensor3<T, M, N, P>;
+
+    Func _f;
+
+    // Default constructor.
+    KOKKOS_DEFAULTED_FUNCTION
+    Tensor3Expression() = default;
+
+    // Create an expression from a callable object.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3Expression( const Func& f )
+        : _f( f )
+    {
+    }
+
+    // Extent.
+    KOKKOS_INLINE_FUNCTION
+    constexpr int extent( const int d ) const
+    {
+        return d == 2 ? extent_2 : (d == 0 ? extent_0 : ( d == 1 ? extent_1 : 0 ));
+    }
+
+    // Evaluate the expression at an index.
+    KOKKOS_INLINE_FUNCTION
+    value_type operator()( const int i, const int j, const int k ) const
+    {
+        return _f( i, j, k );
+    }
+
+    // Get a row as a vector expression.
+    KOKKOS_INLINE_FUNCTION
+    auto row( const int n ) const
+    {
+        return createVectorExpression<T, N>(
+            [=]( const int i ) { return ( *this )( n, i ); } );
+    }
+
+    // Get a column as a vector expression.
+    KOKKOS_INLINE_FUNCTION
+    auto column( const int n ) const
+    {
+        return createVectorExpression<T, M>(
+            [=]( const int i ) { return ( *this )( i, n ); } );
+    }
+};
+
 // Matrix expression container.
 template <class T, int M, int N, class Func>
 struct MatrixExpression
@@ -1272,6 +1365,486 @@ struct VectorView
 };
 
 //---------------------------------------------------------------------------//
+// Tensor3
+//---------------------------------------------------------------------------//
+// Dense 3-dimensional tensor.
+template <class T, int M, int N, int P>
+struct Tensor3
+{
+    T _d[M][N][P];
+
+    static constexpr int extent_0 = M;
+    static constexpr int extent_1 = N;
+    static constexpr int extent_2 = P;
+
+    using value_type = T;
+    using non_const_value_type = typename std::remove_cv<T>::type;
+    using pointer = T*;
+    using reference = T&;
+    using const_reference = const T&;
+
+    using eval_type = Tensor3View<T, M, N, P>;
+    using copy_type = Tensor3<T, M, N, P>;
+
+    // Default constructor.
+    KOKKOS_DEFAULTED_FUNCTION
+    Tensor3() = default;
+
+    // Initializer list constructor.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3( const std::initializer_list<std::initializer_list<std::initializer_list<T>>> data )
+    {
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        for (const auto& slice : data )
+        {
+            i = 0;
+            for ( const auto& row : slice )
+            {
+                j = 0;
+                for ( const auto& value : row )
+                {
+                    _d[i][j][k] = value;
+                    ++j;
+                }
+                ++i;
+            }
+            ++k;
+        }
+    }
+
+    // Deep copy constructor. Triggers expression evaluation.
+    template <
+        class Expression,
+        typename std::enable_if<is_matrix<Expression>::value, int>::type = 0>
+    KOKKOS_INLINE_FUNCTION Tensor3( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j ) 
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) = e( i, j, k );
+            }
+    }
+
+    // Scalar constructor.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3( const T value )
+    {
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) = value;
+            }
+    }
+
+    // Assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3&>::type
+        operator=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) = e( i, j, k );
+
+            }
+        return *this;
+    }
+
+    // Addition assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3&>::type
+        operator+=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) += e( i, j, k );
+
+            }
+        return *this;
+    }
+
+    // Subtraction assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3&>::type
+        operator-=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) -= e( i, j, k );
+
+            }
+        return *this;
+    }
+
+    // Initializer list assignment operator.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3&
+    operator=( const std::initializer_list<std::initializer_list<std::initializer_list<T>>> data )
+    {
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        for ( const auto& slice : data )
+        {
+            i = 0;
+            for ( const auto& row : slice )
+            {
+                j = 0;
+                for ( const auto& value : row )
+                {
+                    _d[i][j][k] = value;
+                    ++j;
+                }
+                ++i;
+            }
+            ++k;
+        }
+
+        return *this;
+    }
+
+    // Scalar value assignment.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3& operator=( const T value )
+    {
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) = value;
+
+            }
+        return *this;
+    }
+
+    // Strides.
+    KOKKOS_INLINE_FUNCTION
+    int stride_0() const { return N; }
+
+    KOKKOS_INLINE_FUNCTION
+    int stride_1() const { return P; }
+
+    KOKKOS_INLINE_FUNCTION
+    int stride_2() const { return 1; }
+
+    KOKKOS_INLINE_FUNCTION
+    int stride( const int d ) const { return ( 0 == d ) ? N : ( 1 == d ? P : 1); }
+
+    // Extent
+    KOKKOS_INLINE_FUNCTION
+    constexpr int extent( const int d ) const
+    {
+        return d == 2 ? extent_2 : (d == 0 ? extent_0 : ( d == 1 ? extent_1 : 0 ));
+    }
+
+    // Access an individual element.
+    KOKKOS_INLINE_FUNCTION
+    const_reference operator()( const int i, const int j, const int k ) const
+    {
+        return _d[i][j][k];
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    reference operator()( const int i, const int j, const int k ) { return _d[i][j][k]; }
+
+    // Get the raw data.
+    KOKKOS_INLINE_FUNCTION
+    pointer data() const { return const_cast<pointer>( &_d[0][0][0] ); }
+
+    // Get a row as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, N> row( const int n ) const
+    {
+        return VectorView<T, N>( const_cast<T*>( &_d[n][0] ), 1 );
+    }
+
+    // Get a column as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, M> column( const int n ) const
+    {
+        return VectorView<T, M>( const_cast<T*>( &_d[0][n] ), N );
+    }
+
+    // // Get a slice as a matrix view.
+    // KOKKOS_INLINE_FUNCTION
+    // MatrixView<T, M, N> slice( const int p) const
+    // {
+    //     return MatrixView<T, M, N>( const_cast<T*>( &_d[]) );
+    // }
+};
+
+//---------------------------------------------------------------------------//
+// View for wrapping Tensor3 data.
+//
+// NOTE: Data in this view may be non-contiguous.
+template <class T, int M, int N, int P>
+struct Tensor3View
+{
+    T* _d;
+    int _stride[3];
+
+    static constexpr int extent_0 = M;
+    static constexpr int extent_1 = N;
+    static constexpr int extent_2 = P;
+
+    using value_type = T;
+    using non_const_value_type = typename std::remove_cv<T>::type;
+    using pointer = T*;
+    using reference = T&;
+    using const_reference = const T&;
+
+    using eval_type = Tensor3View<T, M, N, P>;
+    using copy_type = Tensor3<T, M, N, P>;
+
+    // Default constructor.
+    KOKKOS_DEFAULTED_FUNCTION
+    Tensor3View() = default;
+
+    // Tensor3View constructor.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View( const Tensor3<T, M, N, P>& t )
+        : _d( t.data() )
+    {
+        _stride[0] = t.stride_0();
+        _stride[1] = t.stride_1();
+        _stride[2] = t.stride_2();
+    }
+
+    // Pointer constructor.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View( T* data, const int stride_0, const int stride_1, const int stride_2 )
+        : _d( data )
+    {
+        _stride[0] = stride_0;
+        _stride[1] = stride_1;
+        _stride[2] = stride_2;
+    }
+
+    // Assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3View&>::type
+        operator=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++ k)
+                    ( *this )( i, j, k ) = e( i, j, k );
+            }
+        return *this;
+    }
+
+    // Addition assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3View&>::type
+        operator+=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) += e( i, j, k);
+
+            }
+        return *this;
+    }
+
+    // Subtraction assignment operator. Triggers expression evaluation.
+    template <class Expression>
+    KOKKOS_INLINE_FUNCTION
+        typename std::enable_if<is_tensor3<Expression>::value, Tensor3View&>::type
+        operator-=( const Expression& e )
+    {
+        static_assert( Expression::extent_0 == extent_0, "Extents must match" );
+        static_assert( Expression::extent_1 == extent_1, "Extents must match" );
+        static_assert( Expression::extent_2 == extent_2, "Extents must match" );
+
+
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) -= e( i, j, k );
+
+            }
+        return *this;
+    }
+
+    // Initializer list assignment operator.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View&
+    operator=( const std::initializer_list<std::initializer_list<std::initializer_list<T>>> data )
+    {
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        for ( const auto& slice : data)
+        {
+            i = 0;
+            for ( const auto& row : slice )
+            {
+                j = 0;
+                for ( const auto& value : row )
+                {
+                    ( *this )( i, j, k ) = value;
+                    ++j;
+                }
+                ++i;
+            }
+            ++k;
+        }
+
+        return *this;
+    }
+
+    // Scalar value assignment.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View& operator=( const T value )
+    {
+        for ( int i = 0; i < M; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+            for ( int j = 0; j < N; ++j )
+            {
+                for ( int k = 0; k < P; ++k )
+                    ( *this )( i, j, k ) = value;
+            }
+        return *this;
+    }
+
+    // Strides.
+    KOKKOS_INLINE_FUNCTION
+    int stride_0() const { return _stride[0]; }
+
+    // Strides.
+    KOKKOS_INLINE_FUNCTION
+    int stride_1() const { return _stride[1]; }
+
+    // Strides.
+    KOKKOS_INLINE_FUNCTION
+    int stride_2() const { return _stride[2]; }
+
+    KOKKOS_INLINE_FUNCTION
+    int stride( const int d ) const { return _stride[d]; }
+
+    // Extent
+    KOKKOS_INLINE_FUNCTION
+    constexpr int extent( const int d ) const
+    {
+        return d == 2 ? extent_2 : (d == 0 ? extent_0 : ( d == 1 ? extent_1 : 0 ));
+    }
+
+    // Access an individual element.
+    KOKKOS_INLINE_FUNCTION
+    const_reference operator()( const int i, const int j, const int k ) const
+    {
+        return _d[_stride[0] * _stride[1] * i + _stride[1] * j + _stride[2] * k];
+    }
+
+    KOKKOS_INLINE_FUNCTION
+    reference operator()( const int i, const int j, const int k )
+    {
+        return _d[_stride[0] * _stride[1] * i + _stride[1] * j + _stride[2] * k];
+    }
+
+    // Get a row as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, N> row( const int n ) const
+    {
+        return VectorView<T, N>( const_cast<T*>( &_d[_stride[0] * n] ),
+                                 _stride[1] );
+    }
+
+    // Get a column as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, M> column( const int n ) const
+    {
+        return VectorView<T, M>( const_cast<T*>( &_d[_stride[1] * n] ),
+                                 _stride[0] );
+    }
+
+    // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, M, N> slice( const int p ) const
+    {
+        return MatrixView<T, M, N>( const_cast<T*>( & _d[_stride[1] * p] ),
+                                    _stride[0] );
+    }
+
+    // Get the raw data.
+    KOKKOS_INLINE_FUNCTION
+    pointer data() const { return const_cast<pointer>( _d ); }
+};
+
+//---------------------------------------------------------------------------//
 // Matrix-matrix deep copy.
 //---------------------------------------------------------------------------//
 template <
@@ -1585,6 +2158,27 @@ KOKKOS_INLINE_FUNCTION auto operator|( const ExpressionX& x,
 //---------------------------------------------------------------------------//
 // Scalar multiplication.
 //---------------------------------------------------------------------------//
+// Tensor3.
+template <class ExpressionA,
+          typename std::enable_if_t<is_tensor3<ExpressionA>::value, int> = 0>
+KOKKOS_INLINE_FUNCTION auto
+operator*( const typename ExpressionA::value_type& s, const ExpressionA& a )
+{
+    return createTensor3Expression<typename ExpressionA::value_type,
+                                  ExpressionA::extent_0,
+                                   ExpressionA::extent_1,
+                                    ExpressionA::extent_2>(
+        [=]( const int i, const int j, const int k ) { return s * a( i, j, k ); } );
+}
+
+template <class ExpressionA,
+          typename std::enable_if_t<is_tensor3<ExpressionA>::value, int> = 0>
+KOKKOS_INLINE_FUNCTION auto
+operator*( const ExpressionA& a, const typename ExpressionA::value_type& s )
+{
+    return s * a;
+}
+
 // Matrix.
 template <class ExpressionA,
           typename std::enable_if_t<is_matrix<ExpressionA>::value, int> = 0>
@@ -1627,6 +2221,16 @@ operator*( const ExpressionX& x, const typename ExpressionX::value_type& s )
 //---------------------------------------------------------------------------//
 // Scalar division.
 //---------------------------------------------------------------------------//
+// Tensor3.
+template <class ExpressionA,
+          typename std::enable_if_t<is_tensor3<ExpressionA>::value, int> = 0>
+KOKKOS_INLINE_FUNCTION auto
+operator/( const ExpressionA& a, const typename ExpressionA::value_type& s )
+{
+    auto s_inv = static_cast<typename ExpressionA::value_type>( 1 ) / s;
+    return s_inv * a;
+}
+
 // Matrix.
 template <class ExpressionA,
           typename std::enable_if_t<is_matrix<ExpressionA>::value, int> = 0>
@@ -1771,6 +2375,36 @@ KOKKOS_INLINE_FUNCTION auto diagonal( const ExpressionX& x )
                        ? x( i )
                        : static_cast<typename ExpressionX::value_type>( 0 );
         } );
+}
+
+//---------------------------------------------------------------------------//
+//  Contraction.
+//  Tensor3 and a Vector
+//---------------------------------------------------------------------------//
+template <class ExpressionT, class ExpressionV,
+    typename std::enable_if_t<is_tensor3<ExpressionT>::value &&
+                              is_vector<ExpressionV>::value, int> = 0>
+KOKKOS_INLINE_FUNCTION 
+auto contract( const ExpressionT& t, const ExpressionV& v )
+{
+    static_assert( ExpressionT::extent_2 == ExpressionV::extent_0,
+                   "Inner extents must match");
+
+    typename ExpressionT::eval_type t_eval = t;
+    typename ExpressionV::eval_type v_eval = v;
+    Matrix<typename ExpressionT::value_type, ExpressionT::extent_0,
+         ExpressionT::extent_1> 
+    res = static_cast<typename ExpressionT::value_type>( 0 );
+
+    for ( int i = 0; i < ExpressionT::extent_0; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+        for ( int j = 0; j < ExpressionT::extent_1; ++j )
+            for ( int k = 0; k < ExpressionV::extent_0; ++k )
+                res( i, j ) += t_eval( i, j, k ) * v_eval( k );
+
+    return res;
 }
 
 //---------------------------------------------------------------------------//
@@ -2050,6 +2684,11 @@ template <class T>
 using Vec3 = LinearAlgebra::Vector<T, 3>;
 template <class T>
 using VecView3 = LinearAlgebra::VectorView<T, 3>;
+
+template <class T>
+using Tens3 = LinearAlgebra::Tensor3<T, 3, 3, 3>;
+template <class T>
+using TensView3 = LinearAlgebra::Tensor3View<T, 3, 3, 3>;
 
 //---------------------------------------------------------------------------//
 

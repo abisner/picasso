@@ -42,6 +42,11 @@ struct FooIn : Field::Vector<double, 3>
     static std::string label() { return "foo_in"; }
 };
 
+struct FezIn : Field::Vector<double, 3>
+{
+    static std::string label() { return "fez_in"; }
+};
+
 struct FooOut : Field::Vector<double, 3>
 {
     static std::string label() { return "foo_out"; }
@@ -65,6 +70,11 @@ struct BarOut : Field::Scalar<double>
 struct Baz : Field::Matrix<double, 3, 3>
 {
     static std::string label() { return "baz"; }
+};
+
+struct Boo : Field::Tensor3<double, 3, 3, 3>
+{
+    static std::string label() { return "boo"; }
 };
 
 //---------------------------------------------------------------------------//
@@ -159,6 +169,52 @@ struct GridFunc
 };
 
 //---------------------------------------------------------------------------//
+// Grid operation using a Tensor3
+struct GridTensor3Func
+{
+    struct Tag
+    {
+    };
+
+    template <class LocalMeshType, class GatherDependencies,
+              class ScatterDependencies, class LocalDependencies>
+    KOKKOS_INLINE_FUNCTION void
+    operator()( Tag, const LocalMeshType&,
+                const GatherDependencies& gather_deps,
+                const ScatterDependencies& scatter_deps,
+                const LocalDependencies& local_deps, const int i, const int j,
+                const int k ) const
+    {
+        // Get input dependencies
+        auto foo_in = gather_deps.get( FieldLocation::Cell(), FooIn() );
+        auto fez_in = gather_deps.get( FieldLocation::Cell(), FezIn() );
+
+        // Get output dependencies
+        auto foo_out = scatter_deps.get( FieldLocation::Cell(), FooOut() );
+
+        auto foo_out_access = foo_out.access();
+
+        // Get local dependencies
+        auto boo = local_deps.get( FieldLocation::Cell(), Boo() );
+
+        // Set up the local dependency to be the Levi-Civita tensor.
+        boo( i, j, k ) = { { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 1.0 }, { 0.0, -1.0, 0.0 } },
+                           { { 0.0, 0.0, -1.0 }, { 0.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0 } },
+                           { { 0.0, 1.0, 0.0 }, { -1.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } }
+                         };
+
+        const int index[3] = { i, j, k };
+        auto boo_t_foo_in = LinearAlgebra::contract( boo( index ), foo_in( index ) );
+
+        auto boo_t_foo_in_t_fez_in = boo_t_foo_in * fez_in( index );
+        for ( int d = 0; d < 3; ++d ) {
+            foo_out_access( i, j, k, d ) += boo_t_foo_in_t_fez_in( d ); 
+        }
+    }
+
+};
+
+//---------------------------------------------------------------------------//
 void gatherScatterTest()
 {
     // Global bounding box.
@@ -205,11 +261,13 @@ void gatherScatterTest()
     // Make an operator.
     using gather_deps =
         GatherDependencies<FieldLayout<FieldLocation::Cell, FooIn>,
+                           FieldLayout<FieldLocation::Cell, FezIn>,
                            FieldLayout<FieldLocation::Cell, BarIn>>;
     using scatter_deps =
         ScatterDependencies<FieldLayout<FieldLocation::Cell, FooOut>,
                             FieldLayout<FieldLocation::Cell, BarOut>>;
-    using local_deps = LocalDependencies<FieldLayout<FieldLocation::Cell, Baz>>;
+    using local_deps = LocalDependencies<FieldLayout<FieldLocation::Cell, Baz>,
+                                         FieldLayout<FieldLocation::Cell, Boo>>;
     auto grid_op =
         createGridOperator( mesh, gather_deps(), scatter_deps(), local_deps() );
 
@@ -223,7 +281,7 @@ void gatherScatterTest()
     Kokkos::deep_copy( fm->view( FieldLocation::Cell(), FooIn() ), 2.0 );
     Kokkos::deep_copy( fm->view( FieldLocation::Cell(), BarIn() ), 3.0 );
 
-    // Initialiize scatter fields to wrong data to make sure they get reset to
+    // Initialize scatter fields to wrong data to make sure they get reset to
     // zero and then overwritten with the data we assign in the operator.
     Kokkos::deep_copy( fm->view( FieldLocation::Cell(), FooOut() ), -1.1 );
     Kokkos::deep_copy( fm->view( FieldLocation::Cell(), BarOut() ), -2.2 );
@@ -277,6 +335,49 @@ void gatherScatterTest()
                 EXPECT_EQ( foo_out_host( i, j, k, d ), 4.0 + i + j + k );
             EXPECT_EQ( bar_out_host( i, j, k, 0 ), 6.0 + i + j + k );
         } );
+
+    // Re-initialize gather fields
+
+    auto foo_view = fm->view( FieldLocation::Cell(), FooIn() );
+    auto fez_view = fm->view( FieldLocation::Cell(), FezIn() );
+
+    LinearAlgebra::Vector<float, 3> vec1 = { 1.0, 2.0, 3.0 };
+    LinearAlgebra::Vector<float, 3> vec2 = { 3.0, 4.0, 3.0 };
+
+    Cajita::grid_parallel_for( 
+        "initialize_grid_vectors", Kokkos::DefaultHostExecutionSpace(),
+        *( mesh->localGrid() ), Cajita::Own(), Cajita::Cell(),
+        KOKKOS_LAMBDA( const int i, const int j, const int k ) {
+            foo_view( i, j, k, 0 ) = 1.0;
+            foo_view( i, j, k, 1 ) = 2.0;
+            foo_view( i, j, k, 2 ) = 1.0;
+            fez_view( i, j, k, 0 ) = 3.0;
+            fez_view( i, j, k, 1 ) = 4.0;
+            fez_view( i, j, k, 2 ) = 3.0;
+        } );
+
+    Kokkos::deep_copy( fm->view( FieldLocation::Cell(), FooOut() ), -1.1 );
+
+    // Apply the tensor3 grid operator. Use a tag.
+    GridTensor3Func grid_tensor_func;
+    grid_op->apply( FieldLocation::Cell(), TEST_EXECSPACE(), *fm,
+                    GridTensor3Func::Tag(), grid_tensor_func );
+
+    // Check the grid results.
+    Kokkos::deep_copy( foo_out_host,
+                       fm->view( FieldLocation::Cell(), FooOut() ) );
+
+    // Expect the correct cross-product for the given vector fields
+    Cajita::grid_parallel_for(
+        "check_grid_out", Kokkos::DefaultHostExecutionSpace(),
+        *( mesh->localGrid() ), Cajita::Own(), Cajita::Cell(),
+        KOKKOS_LAMBDA( const int i, const int j, const int k ) {
+            EXPECT_EQ( foo_out_host( i, j, k, 0), -6.0 );
+            EXPECT_EQ( foo_out_host( i, j, k, 1), 6.0 );
+            EXPECT_EQ( foo_out_host( i, j, k, 2), 2.0 );
+
+        } );
+    
 }
 
 //---------------------------------------------------------------------------//
