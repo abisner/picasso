@@ -360,7 +360,7 @@ void gatherScatterTest()
 
     // Apply the tensor3 grid operator. Use a tag.
     GridTensor3Func grid_tensor_func;
-    grid_op->apply( FieldLocation::Cell(), TEST_EXECSPACE(), *fm,
+    grid_op->apply( "grid_tensor_op", FieldLocation::Cell(), TEST_EXECSPACE(), *fm,
                     GridTensor3Func::Tag(), grid_tensor_func );
 
     // Check the grid results.

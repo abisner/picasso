@@ -254,14 +254,163 @@ void matrixTest()
     EXPECT_DOUBLE_EQ( 144.0, obo2( 0, 0 ) );
 }
 
-void Tensor3Test()
+void tensor3Test()
 {
     // Check a basic Tensor3
-    LinearAlgebra::Tensor3<float, 3, 3, 3> = {{{2.3, -1.1, 4.0}, {2.0, 5.0, -3.2}, {10.25, -8.3, -9.1}},
-                                              {{7.2, 4.5, 6.8}, {-2.5, 0.8, -2.8}, {3.1, 4.0, 5.8}},
-                                              {{-9.0, 3.1, 8.2}, {7.7, -0.3, 1.9}, {-3.5, 6.6, 1.4}} };
+    LinearAlgebra::Tensor3<double, 3, 4, 2> t = {{{2.3, -1.1}, {2.0, -3.2}, {-8.3, -9.1}, {1.4, 5.8}},
+                                              {{7.2, 4.5}, {-2.5, -2.8}, {3.1, 4.0}, {-7.7, 6.4}},
+                                              {{-9.0, 8.2}, {0.3, -1.9}, {-3.5, 6.6}, {4.0, 1.4}} };
 
-                                              
+    EXPECT_EQ( t.stride( 0 ), 4);
+    EXPECT_EQ( t.stride( 1 ), 2);
+    EXPECT_EQ( t.stride( 2 ), 1);
+    EXPECT_EQ( t.stride_0(), 4);
+    EXPECT_EQ( t.stride_1(), 2);
+    EXPECT_EQ( t.stride_2(), 1);
+    EXPECT_EQ( t.extent( 0 ), 3);
+    EXPECT_EQ( t.extent( 1 ), 4);
+    EXPECT_EQ( t.extent( 2 ), 2);
+
+    EXPECT_EQ( t(0, 0, 0), 2.3);
+    EXPECT_EQ( t(0, 0, 1), -1.1);
+    EXPECT_EQ( t(0, 1, 0), 2.0);
+    EXPECT_EQ( t(0, 1, 1), -3.2);
+    EXPECT_EQ( t(0, 2, 0), -8.3);
+    EXPECT_EQ( t(0, 2, 1), -9.1);
+    EXPECT_EQ( t(0, 3, 0), 1.4);
+    EXPECT_EQ( t(0, 3, 1), 5.8);
+    EXPECT_EQ( t(1, 0, 0), 7.2);
+    EXPECT_EQ( t(1, 0, 1), 4.5);
+    EXPECT_EQ( t(1, 1, 0), -2.5);
+    EXPECT_EQ( t(1, 1, 1), -2.8);
+    EXPECT_EQ( t(1, 2, 0), 3.1);
+    EXPECT_EQ( t(1, 2, 1), 4.0);
+    EXPECT_EQ( t(1, 3, 0), -7.7);
+    EXPECT_EQ( t(1, 3, 1), 6.4);
+    EXPECT_EQ( t(2, 0, 0), -9.0);
+    EXPECT_EQ( t(2, 0, 1), 8.2);
+    EXPECT_EQ( t(2, 1, 0), 0.3);
+    EXPECT_EQ( t(2, 1, 1), -1.9);
+    EXPECT_EQ( t(2, 2, 0), -3.5);
+    EXPECT_EQ( t(2, 2, 1), 6.6);
+    EXPECT_EQ( t(2, 3, 0), 4.0);
+    EXPECT_EQ( t(2, 3, 1), 1.4);
+
+    // Check tensor3 view
+    LinearAlgebra::Tensor3View<double, 3, 4, 2> t_view( t.data(),
+                            t.stride_0(), t.stride_1(), t.stride_2() );
+
+    EXPECT_EQ( t_view.stride( 0 ), 4);
+    EXPECT_EQ( t_view.stride( 1 ), 2);
+    EXPECT_EQ( t_view.stride( 2 ), 1);
+    EXPECT_EQ( t_view.stride_0(), 4);
+    EXPECT_EQ( t_view.stride_1(), 2);
+    EXPECT_EQ( t_view.stride_2(), 1);
+    EXPECT_EQ( t_view.extent( 0 ), 3);
+    EXPECT_EQ( t_view.extent( 1 ), 4);
+    EXPECT_EQ( t_view.extent( 2 ), 2);
+
+    EXPECT_EQ( t_view(0, 0, 0), 2.3);
+    EXPECT_EQ( t_view(0, 0, 1), -1.1);
+    EXPECT_EQ( t_view(0, 1, 0), 2.0);
+    EXPECT_EQ( t_view(0, 1, 1), -3.2);
+    EXPECT_EQ( t_view(0, 2, 0), -8.3);
+    EXPECT_EQ( t_view(0, 2, 1), -9.1);
+    EXPECT_EQ( t_view(0, 3, 0), 1.4);
+    EXPECT_EQ( t_view(0, 3, 1), 5.8);
+    EXPECT_EQ( t_view(1, 0, 0), 7.2);
+    EXPECT_EQ( t_view(1, 0, 1), 4.5);
+    EXPECT_EQ( t_view(1, 1, 0), -2.5);
+    EXPECT_EQ( t_view(1, 1, 1), -2.8);
+    EXPECT_EQ( t_view(1, 2, 0), 3.1);
+    EXPECT_EQ( t_view(1, 2, 1), 4.0);
+    EXPECT_EQ( t_view(1, 3, 0), -7.7);
+    EXPECT_EQ( t_view(1, 3, 1), 6.4);
+    EXPECT_EQ( t_view(2, 0, 0), -9.0);
+    EXPECT_EQ( t_view(2, 0, 1), 8.2);
+    EXPECT_EQ( t_view(2, 1, 0), 0.3);
+    EXPECT_EQ( t_view(2, 1, 1), -1.9);
+    EXPECT_EQ( t_view(2, 2, 0), -3.5);
+    EXPECT_EQ( t_view(2, 2, 1), 6.6);
+    EXPECT_EQ( t_view(2, 3, 0), 4.0);
+    EXPECT_EQ( t_view(2, 3, 1), 1.4);
+
+    // Check scalar assignment and () operator
+    t = 43.3;
+    for ( int i = 0; i < 3; ++ i) {
+        for ( int j = 0; j < 4; ++j) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_EQ( t( i, j, k ), 43.3 );
+
+                t( i, j, k ) = -10.2;
+                EXPECT_EQ( t( i, j, k) , -10.2);
+            }
+        }
+    }
+
+    // Check default initialization
+    LinearAlgebra::Tensor3<double, 3, 4, 2> s;
+    EXPECT_EQ( s.stride( 0 ), 4);
+    EXPECT_EQ( s.stride( 1 ), 2);
+    EXPECT_EQ( s.stride( 2 ), 1);
+    EXPECT_EQ( s.stride_0(), 4);
+    EXPECT_EQ( s.stride_1(), 2);
+    EXPECT_EQ( s.stride_2(), 1);
+    EXPECT_EQ( s.extent( 0 ), 3);
+    EXPECT_EQ( s.extent( 1 ), 4);
+    EXPECT_EQ( s.extent( 2 ), 2);
+
+    // Check scalar constructor
+    LinearAlgebra::Tensor3<double, 3, 4, 2> u = 33.0;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 4; ++j ) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_EQ( u( i, j, k ), 33.0);
+            }
+        }
+    }
+
+    // Check scalar multiplication
+    auto v = 2.0 * u;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 4; ++j ) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_EQ( v( i, j, k ), 66.0);
+            }
+        }
+    }
+
+    // Check scalar division
+    auto w = u / 2.0;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 4; ++j ) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_EQ( w( i, j, k ), 16.5);
+            }
+        }
+    }
+
+    // Check addition assignment
+    LinearAlgebra::Tensor3<double, 3, 4, 2> tt = w;
+    tt += u;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 4; ++j ) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_DOUBLE_EQ( tt( i, j, k ), 49.5);
+            }
+        }
+    }
+
+    // Check subtraction assignment
+    tt -= u;
+    for ( int i = 0; i < 3; ++i ) {
+        for ( int j = 0; j < 4; ++j ) {
+            for ( int k = 0; k < 2; ++k ) {
+                EXPECT_DOUBLE_EQ( tt( i, j, k ), 16.5);
+            }
+        }
+    }
+
 }
 
 //---------------------------------------------------------------------------//
@@ -902,6 +1051,8 @@ void eigendecompositionTest()
 TEST( TEST_CATEGORY, matrix_test ) { matrixTest(); }
 
 TEST( TEST_CATEGORY, vector_test ) { vectorTest(); }
+
+TEST( TEST_CATEGORY, tensor3_test ) { tensor3Test(); }
 
 TEST( TEST_CATEGORY, view_test ) { viewTest(); }
 

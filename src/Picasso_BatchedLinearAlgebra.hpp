@@ -195,6 +195,11 @@ struct is_tensor3_impl : public std::false_type
 {
 };
 
+template<class T, int M, int N, int P, class Func>
+struct is_tensor3_impl<Tensor3Expression<T, M, N, P, Func>> : public std::true_type
+{
+};
+
 template<class T, int M, int N, int P>
 struct is_tensor3_impl<Tensor3<T, M, N, P>> : public std::true_type
 {
@@ -1399,25 +1404,25 @@ struct Tensor3
         int k = 0;
         for (const auto& slice : data )
         {
-            i = 0;
+            j = 0;
             for ( const auto& row : slice )
             {
-                j = 0;
+                k = 0;
                 for ( const auto& value : row )
                 {
                     _d[i][j][k] = value;
-                    ++j;
+                    ++k;
                 }
-                ++i;
+                ++j;
             }
-            ++k;
+            ++i;
         }
     }
 
     // Deep copy constructor. Triggers expression evaluation.
     template <
         class Expression,
-        typename std::enable_if<is_matrix<Expression>::value, int>::type = 0>
+        typename std::enable_if<is_tensor3<Expression>::value, int>::type = 0>
     KOKKOS_INLINE_FUNCTION Tensor3( const Expression& e )
     {
         static_assert( Expression::extent_0 == extent_0, "Extents must match" );
@@ -1531,18 +1536,18 @@ struct Tensor3
         int k = 0;
         for ( const auto& slice : data )
         {
-            i = 0;
+            j = 0;
             for ( const auto& row : slice )
             {
-                j = 0;
+                k = 0;
                 for ( const auto& value : row )
                 {
                     _d[i][j][k] = value;
-                    ++j;
+                    ++k;
                 }
-                ++i;
+                ++j;
             }
-            ++k;
+            ++i;
         }
 
         return *this;
@@ -1747,18 +1752,18 @@ struct Tensor3View
         int k = 0;
         for ( const auto& slice : data)
         {
-            i = 0;
+            j = 0;
             for ( const auto& row : slice )
             {
-                j = 0;
+                k = 0;
                 for ( const auto& value : row )
                 {
                     ( *this )( i, j, k ) = value;
-                    ++j;
+                    ++k;
                 }
-                ++i;
+                ++j;
             }
-            ++k;
+            ++i;
         }
 
         return *this;
