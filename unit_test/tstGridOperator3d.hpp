@@ -198,20 +198,21 @@ struct GridTensor3Func
         auto boo = local_deps.get( FieldLocation::Cell(), Boo() );
 
         // Set up the local dependency to be the Levi-Civita tensor.
-        boo( i, j, k ) = { { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, 1.0 }, { 0.0, -1.0, 0.0 } },
-                           { { 0.0, 0.0, -1.0 }, { 0.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0 } },
-                           { { 0.0, 1.0, 0.0 }, { -1.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } }
-                         };
+        boo( i, j, k ) = {
+            { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
+            { { 0.0, 0.0, 1.0 }, { 0.0, 0.0, 0.0 }, { -1.0, 0.0, 0.0 } },
+            { { 0.0, -1.0, 0.0 }, { 1.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } } };
 
         const int index[3] = { i, j, k };
-        auto boo_t_foo_in = LinearAlgebra::contract( boo( index ), foo_in( index ) );
+        auto boo_t_foo_in =
+            LinearAlgebra::contract( boo( index ), foo_in( index ) );
 
         auto boo_t_foo_in_t_fez_in = boo_t_foo_in * fez_in( index );
-        for ( int d = 0; d < 3; ++d ) {
-            foo_out_access( i, j, k, d ) += boo_t_foo_in_t_fez_in( d ); 
+        for ( int d = 0; d < 3; ++d )
+        {
+            foo_out_access( i, j, k, d ) += boo_t_foo_in_t_fez_in( d );
         }
     }
-
 };
 
 //---------------------------------------------------------------------------//
@@ -344,13 +345,13 @@ void gatherScatterTest()
     LinearAlgebra::Vector<float, 3> vec1 = { 1.0, 2.0, 3.0 };
     LinearAlgebra::Vector<float, 3> vec2 = { 3.0, 4.0, 3.0 };
 
-    Cajita::grid_parallel_for( 
+    Cajita::grid_parallel_for(
         "initialize_grid_vectors", Kokkos::DefaultHostExecutionSpace(),
         *( mesh->localGrid() ), Cajita::Own(), Cajita::Cell(),
         KOKKOS_LAMBDA( const int i, const int j, const int k ) {
             foo_view( i, j, k, 0 ) = 1.0;
             foo_view( i, j, k, 1 ) = 2.0;
-            foo_view( i, j, k, 2 ) = 1.0;
+            foo_view( i, j, k, 2 ) = 3.0;
             fez_view( i, j, k, 0 ) = 3.0;
             fez_view( i, j, k, 1 ) = 4.0;
             fez_view( i, j, k, 2 ) = 3.0;
@@ -360,8 +361,8 @@ void gatherScatterTest()
 
     // Apply the tensor3 grid operator. Use a tag.
     GridTensor3Func grid_tensor_func;
-    grid_op->apply( "grid_tensor_op", FieldLocation::Cell(), TEST_EXECSPACE(), *fm,
-                    GridTensor3Func::Tag(), grid_tensor_func );
+    grid_op->apply( "grid_tensor_op", FieldLocation::Cell(), TEST_EXECSPACE(),
+                    *fm, GridTensor3Func::Tag(), grid_tensor_func );
 
     // Check the grid results.
     Kokkos::deep_copy( foo_out_host,
@@ -372,12 +373,10 @@ void gatherScatterTest()
         "check_grid_out", Kokkos::DefaultHostExecutionSpace(),
         *( mesh->localGrid() ), Cajita::Own(), Cajita::Cell(),
         KOKKOS_LAMBDA( const int i, const int j, const int k ) {
-            EXPECT_EQ( foo_out_host( i, j, k, 0), -6.0 );
-            EXPECT_EQ( foo_out_host( i, j, k, 1), 6.0 );
-            EXPECT_EQ( foo_out_host( i, j, k, 2), 2.0 );
-
+            EXPECT_EQ( foo_out_host( i, j, k, 0 ), -6.0 );
+            EXPECT_EQ( foo_out_host( i, j, k, 1 ), 6.0 );
+            EXPECT_EQ( foo_out_host( i, j, k, 2 ), -2.0 );
         } );
-    
 }
 
 //---------------------------------------------------------------------------//

@@ -601,7 +601,7 @@ struct MatrixViewWrapper
 //---------------------------------------------------------------------------//
 // Tensor3 Field View Wrapper
 //---------------------------------------------------------------------------//
-// Wraps a Kokkos view of a structured grid tensor field at the given index
+// Wraps a Kokkos view of a structured grid tensor3 field at the given index
 // allowing for it to be treated as a tensor in a point-wise manner in kernel
 // operations without needing explicit dimension indices in the syntax.
 template <class View, class Layout>
@@ -619,8 +619,9 @@ struct Tensor3ViewWrapper
     static constexpr int dim1 = layout_type::tag::dim1;
     static constexpr int dim2 = layout_type::tag::dim2;
 
-    static_assert( Field::is_tensor3<typename layout_type::tag>::value,
-                   "Tensor3ViewWrappers may only be applied to tensor3 fields" );
+    static_assert(
+        Field::is_tensor3<typename layout_type::tag>::value,
+        "Tensor3ViewWrappers may only be applied to tensor3 fields" );
 
     View _v;
 
@@ -649,7 +650,8 @@ struct Tensor3ViewWrapper
     {
         static_assert( 4 == VR, "This template parameter is for SFINAE only "
                                 "and should not be given explicitly" );
-        return linear_algebra_type( &_v( i0, i1, i2, 0 ), dim1 * dim2 * _v.stride( 3 ),
+        return linear_algebra_type( &_v( i0, i1, i2, 0 ),
+                                    dim1 * dim2 * _v.stride( 3 ),
                                     dim1 * _v.stride( 3 ), _v.stride( 3 ) );
     }
 
@@ -659,7 +661,8 @@ struct Tensor3ViewWrapper
     {
         static_assert( 3 == VR, "This template parameter is for SFINAE only "
                                 "and should not be given explicitly" );
-        return linear_algebra_type( &_v( i0, i1, 0 ), dim1 * dim2 * _v.stride( 2 ),
+        return linear_algebra_type( &_v( i0, i1, 0 ),
+                                    dim1 * dim2 * _v.stride( 2 ),
                                     dim1 * _v.stride( 2 ), _v.stride( 2 ) );
     }
 
@@ -672,8 +675,8 @@ struct Tensor3ViewWrapper
         static_assert( 4 == VR, "This template parameter is for SFINAE only "
                                 "and should not be given explicitly" );
         return linear_algebra_type( &_v( i[0], i[1], i[2], 0 ),
-                                    dim1 * dim2 * _v.stride( 3 ), dim1 * _v.stride( 3 ),
-                                    _v.stride( 3 ) );
+                                    dim1 * dim2 * _v.stride( 3 ),
+                                    dim1 * _v.stride( 3 ), _v.stride( 3 ) );
     }
 
     template <int VR = view_rank>
@@ -682,7 +685,8 @@ struct Tensor3ViewWrapper
     {
         static_assert( 3 == VR, "This template parameter is for SFINAE only "
                                 "and should not be given explicitly" );
-        return linear_algebra_type( &_v( i[0], i[1], 0 ), dim1 * dim2 * _v.stride( 2 ),
+        return linear_algebra_type( &_v( i[0], i[1], 0 ),
+                                    dim1 * dim2 * _v.stride( 2 ),
                                     dim1 * _v.stride( 2 ), _v.stride( 2 ) );
     }
 
