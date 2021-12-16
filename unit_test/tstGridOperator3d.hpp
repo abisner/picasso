@@ -77,6 +77,11 @@ struct Boo : Field::Tensor3<double, 3, 3, 3>
     static std::string label() { return "boo"; }
 };
 
+struct Cam : Field::Tensor4<double, 3, 3, 3, 3>
+{
+    static std::string label() { return "cam"; }
+};
+
 //---------------------------------------------------------------------------//
 // Particle operation.
 struct ParticleFunc
@@ -215,6 +220,52 @@ struct GridTensor3Func
     }
 };
 
+// Grid operation using a Tensor4
+struct GridTensor4Func
+{
+    struct Tag
+    {
+    };
+
+    template <class LocalMeshType, class GatherDependencies,
+              class ScatterDependencies, class LocalDependencies>
+    KOKKOS_INLINE_FUNCTION void
+    operator()( Tag, const LocalMeshType&,
+                const GatherDependencies& gather_deps,
+                const ScatterDependencies& scatter_deps,
+                const LocalDependencies& local_deps, const int i, const int j,
+                const int k ) const
+    {
+        // Get input dependencies
+        auto foo_in = gather_deps.get( FieldLocation::Cell(), FooIn() );
+        auto fez_in = gather_deps.get( FieldLocation::Cell(), FezIn() );
+
+        // Get output dependencies
+        auto foo_out = scatter_deps.get( FieldLocation::Cell(), FooOut() );
+
+        auto foo_out_access = foo_out.access();
+
+        // Get local dependencies
+        auto cam = local_deps.get( FieldLocation::Cell(), Cam() );
+
+        // Set up the local dependency to be the linear elasticity tensor
+        cam( i, j, k ) = {
+            { { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } } },
+            { { { 0.0, 0.0, 1.0 }, { 0.0, 0.0, 0.0 }, { -1.0, 0.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } } },
+            { { { 0.0, -1.0, 0.0 }, { 1.0, 0.0, 0.0 }, { 0.0, 0.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
+              { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } } } };
+
+        auto res = cam * 2;
+
+        const int index[3] = { i, j, k };
+    }
+};
+
 //---------------------------------------------------------------------------//
 void gatherScatterTest()
 {
@@ -268,7 +319,8 @@ void gatherScatterTest()
         ScatterDependencies<FieldLayout<FieldLocation::Cell, FooOut>,
                             FieldLayout<FieldLocation::Cell, BarOut>>;
     using local_deps = LocalDependencies<FieldLayout<FieldLocation::Cell, Baz>,
-                                         FieldLayout<FieldLocation::Cell, Boo>>;
+                                         FieldLayout<FieldLocation::Cell, Boo>,
+                                         FieldLayout<FieldLocation::Cell, Cam>>;
     auto grid_op =
         createGridOperator( mesh, gather_deps(), scatter_deps(), local_deps() );
 
@@ -377,6 +429,10 @@ void gatherScatterTest()
             EXPECT_EQ( foo_out_host( i, j, k, 1 ), 6.0 );
             EXPECT_EQ( foo_out_host( i, j, k, 2 ), -2.0 );
         } );
+
+    GridTensor4Func grid_tensor4_func;
+    grid_op->apply( "grid_tensor4_op", FieldLocation::Cell(), TEST_EXECSPACE(),
+                    *fm, GridTensor4Func::Tag(), grid_tensor4_func );
 }
 
 //---------------------------------------------------------------------------//
