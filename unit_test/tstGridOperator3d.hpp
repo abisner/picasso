@@ -260,9 +260,10 @@ struct GridTensor4Func
               { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } },
               { { 0.0, 0.0, 0.0 }, { 0.0, 0.0, -1.0 }, { 0.0, 1.0, 0.0 } } } };
 
-        auto res = cam * 2;
-
         const int index[3] = { i, j, k };
+
+        auto res = cam( index ) * 2.0;
+
     }
 };
 

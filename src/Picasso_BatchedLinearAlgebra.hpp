@@ -2423,7 +2423,7 @@ struct Tensor4View
                     l = 0;
                     for ( const auto& value : row )
                     {
-                        ( *this )[i][j][k][l] = value;
+                        ( *this )( i, j, k, l ) = value;
                         ++l;
                     }
                     ++k;
