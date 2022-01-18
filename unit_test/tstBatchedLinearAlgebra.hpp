@@ -625,7 +625,7 @@ void tensor4Test()
     EXPECT_EQ( s.stride( 3 ), 1 );
     EXPECT_EQ( s.stride_0(), 4 );
     EXPECT_EQ( s.stride_1(), 2 );
-    EXPECT_EQ( s.stride_2(), 1 );
+    EXPECT_EQ( s.stride_2(), 2 );
     EXPECT_EQ( s.stride_3(), 1 );
     EXPECT_EQ( s.extent( 0 ), 3 );
     EXPECT_EQ( s.extent( 1 ), 4 );
