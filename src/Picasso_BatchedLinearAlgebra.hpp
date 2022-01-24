@@ -3107,7 +3107,8 @@ template <class ExpressionT, class ExpressionV,
                                         is_vector<ExpressionV>::value,
                                     int> = 0>
 KOKKOS_INLINE_FUNCTION auto contract( const ExpressionT& t,
-                                      const ExpressionV& v, std::integral_constant<std::size_t, 0> )
+                                      const ExpressionV& v,
+                                      std::integral_constant<std::size_t, 0> )
 {
     static_assert( ExpressionT::extent_0 == ExpressionV::extent_0,
                    "Inner extents must match" );
@@ -3134,7 +3135,8 @@ template <class ExpressionT, class ExpressionV,
                                         is_vector<ExpressionV>::value,
                                     int> = 0>
 KOKKOS_INLINE_FUNCTION auto contract( const ExpressionT& t,
-                                      const ExpressionV& v, std::integral_constant<std::size_t, 1> )
+                                      const ExpressionV& v,
+                                      std::integral_constant<std::size_t, 1> )
 {
     static_assert( ExpressionT::extent_1 == ExpressionV::extent_0,
                    "Inner extents must match" );
@@ -3161,7 +3163,8 @@ template <class ExpressionT, class ExpressionV,
                                         is_vector<ExpressionV>::value,
                                     int> = 0>
 KOKKOS_INLINE_FUNCTION auto contract( const ExpressionT& t,
-                                      const ExpressionV& v, std::integral_constant<std::size_t, 2> )
+                                      const ExpressionV& v,
+                                      std::integral_constant<std::size_t, 2> )
 {
     static_assert( ExpressionT::extent_2 == ExpressionV::extent_0,
                    "Inner extents must match" );
@@ -3179,6 +3182,36 @@ KOKKOS_INLINE_FUNCTION auto contract( const ExpressionT& t,
         for ( int j = 0; j < ExpressionT::extent_1; ++j )
             for ( int k = 0; k < ExpressionV::extent_0; ++k )
                 res( i, j ) += t_eval( i, j, k ) * v_eval( k );
+
+    return res;
+}
+
+template <class ExpressionT, class ExpressionM,
+          typename std::enable_if_t<is_tensor4<ExpressionT>::value &&
+                                        is_matrix<ExpressionM>::value,
+                                    int> = 0>
+KOKKOS_INLINE_FUNCTION auto contract( const ExpressionT& t,
+                                      const ExpressionM& m )
+{
+    static_assert( ExpressionT::extent_2 == ExpressionM::extent_0,
+                   "Inner extents must match" );
+    static_assert( ExpressionT::extent_3 == ExpressionM::extent_1,
+                   "Inner extents must match " );
+
+    typename ExpressionT::eval_type t_eval = t;
+    typename ExpressionM::eval_type m_eval = m;
+    Matrix<typename ExpressionT::value_type, ExpressionT::extent_0,
+           ExpressionT::extent_1>
+        res = static_cast<typename ExpressionT::value_type>( 0 );
+
+    for ( int i = 0; i < ExpressionT::extent_0; ++i )
+#if defined( KOKKOS_ENABLE_PRAGMA_UNROLL )
+#pragma unroll
+#endif
+        for ( int j = 0; j < ExpressionT::extent_1; ++j )
+            for ( int k = 0; k < ExpressionM::extent_0; ++k )
+                for ( int l = 0; l < ExpressionM::extent_1; ++l )
+                    res( i, j ) += t_eval( i, j, k, l ) * m_eval( k, l );
 
     return res;
 }
