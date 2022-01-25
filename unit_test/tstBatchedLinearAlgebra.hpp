@@ -297,6 +297,53 @@ void tensor3Test()
     EXPECT_EQ( t( 2, 3, 0 ), 4.0 );
     EXPECT_EQ( t( 2, 3, 1 ), 1.4 );
 
+    auto m2_1 = t.slice( ":", ":", 0 );
+    EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
+    EXPECT_EQ( m2_1( 0, 2 ), -8.3 );
+    EXPECT_EQ( m2_1( 0, 3 ), 1.4 );
+    EXPECT_EQ( m2_1( 1, 0 ), 7.2 );
+    EXPECT_EQ( m2_1( 1, 1 ), -2.5 );
+    EXPECT_EQ( m2_1( 1, 2 ), 3.1 );
+    EXPECT_EQ( m2_1( 1, 3 ), -7.7 );
+    EXPECT_EQ( m2_1( 2, 0 ), -9.0 );
+    EXPECT_EQ( m2_1( 2, 1 ), 0.3 );
+    EXPECT_EQ( m2_1( 2, 2 ), -3.5 );
+    EXPECT_EQ( m2_1( 2, 3 ), 4.0 );
+
+    auto m2_2 = t.slice( ":", 0, ":" );
+    EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_2( 0, 1 ), -1.1 );
+    EXPECT_EQ( m2_2( 1, 0 ), 7.2 );
+    EXPECT_EQ( m2_2( 1, 1 ), 4.5 );
+    EXPECT_EQ( m2_2( 2, 0 ), -9.0 );
+    EXPECT_EQ( m2_2( 2, 1 ), 8.2 );
+
+    auto m2_3 = t.slice( 0, ":", ":" );
+    EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_3( 0, 1 ), -1.1 );
+    EXPECT_EQ( m2_3( 1, 0 ), 2.0 );
+    EXPECT_EQ( m2_3( 1, 1 ), -3.2 );
+    EXPECT_EQ( m2_3( 2, 0 ), -8.3 );
+    EXPECT_EQ( m2_3( 2, 1 ), -9.1 );
+    EXPECT_EQ( m2_3( 3, 0 ), 1.4 );
+    EXPECT_EQ( m2_3( 3, 1 ), 5.8 );
+
+    auto v1_1 = t.vector( ":", 0, 0 );
+    EXPECT_EQ( v1_1( 0 ), 2.3 );
+    EXPECT_EQ( v1_1( 1 ), 7.2 );
+    EXPECT_EQ( v1_1( 2 ), -9.0 );
+
+    auto v1_2 = t.vector( 0, ":", 0 );
+    EXPECT_EQ( v1_2( 0 ), 2.3 );
+    EXPECT_EQ( v1_2( 1 ), 2.0 );
+    EXPECT_EQ( v1_2( 2 ), -8.3 );
+    EXPECT_EQ( v1_2( 3 ), 1.4 );
+
+    auto v1_3 = t.vector( 0, 0, ":" );
+    EXPECT_EQ( v1_3( 0 ), 2.3 );
+    EXPECT_EQ( v1_3( 1 ), -1.1 );
+
     // Check tensor3 view
     LinearAlgebra::Tensor3View<double, 3, 4, 2> t_view(
         t.data(), t.stride_0(), t.stride_1(), t.stride_2() );
@@ -598,193 +645,191 @@ void tensor4Test()
     EXPECT_EQ( t_view( 2, 3, 1, 0 ), -6.5 );
     EXPECT_EQ( t_view( 2, 3, 1, 1 ), -8.2 );
 
-
     // Test general slicing operations
 
-    auto t3_1 = t.block(1, ":", ":", ":");
+    auto t3_1 = t.block( 1, ":", ":", ":" );
     // Expect a <4,2,2> shaped Tensor3View
-    EXPECT_EQ( t3_1(0, 0, 0), 7.2);
-    EXPECT_EQ( t3_1(0, 0, 1), 4.5);
-    EXPECT_EQ( t3_1(0, 1, 0), 4.6);
-    EXPECT_EQ( t3_1(0, 1, 1), 8.8);
-    EXPECT_EQ( t3_1(1, 0, 0), -2.5);
-    EXPECT_EQ( t3_1(1, 0, 1), -2.8);
-    EXPECT_EQ( t3_1(1, 1, 0), -1.7);
-    EXPECT_EQ( t3_1(1, 1, 1), 0.3);
-    EXPECT_EQ( t3_1(2, 0, 0), 3.1);
-    EXPECT_EQ( t3_1(2, 0, 1), 4.0);
-    EXPECT_EQ( t3_1(2, 1, 0), 0.6);
-    EXPECT_EQ( t3_1(2, 1, 1), -4.8);
-    EXPECT_EQ( t3_1(3, 0, 0), -7.7);
-    EXPECT_EQ( t3_1(3, 0, 1), 6.4);
-    EXPECT_EQ( t3_1(3, 1, 0), -9.2);
-    EXPECT_EQ( t3_1(3, 1, 1), 3.1);
+    EXPECT_EQ( t3_1( 0, 0, 0 ), 7.2 );
+    EXPECT_EQ( t3_1( 0, 0, 1 ), 4.5 );
+    EXPECT_EQ( t3_1( 0, 1, 0 ), 4.6 );
+    EXPECT_EQ( t3_1( 0, 1, 1 ), 8.8 );
+    EXPECT_EQ( t3_1( 1, 0, 0 ), -2.5 );
+    EXPECT_EQ( t3_1( 1, 0, 1 ), -2.8 );
+    EXPECT_EQ( t3_1( 1, 1, 0 ), -1.7 );
+    EXPECT_EQ( t3_1( 1, 1, 1 ), 0.3 );
+    EXPECT_EQ( t3_1( 2, 0, 0 ), 3.1 );
+    EXPECT_EQ( t3_1( 2, 0, 1 ), 4.0 );
+    EXPECT_EQ( t3_1( 2, 1, 0 ), 0.6 );
+    EXPECT_EQ( t3_1( 2, 1, 1 ), -4.8 );
+    EXPECT_EQ( t3_1( 3, 0, 0 ), -7.7 );
+    EXPECT_EQ( t3_1( 3, 0, 1 ), 6.4 );
+    EXPECT_EQ( t3_1( 3, 1, 0 ), -9.2 );
+    EXPECT_EQ( t3_1( 3, 1, 1 ), 3.1 );
 
-    auto t3_2 = t.block(":", 1, ":", ":");
+    auto t3_2 = t.block( ":", 1, ":", ":" );
     // Expect a <3,2,2> shaped Tensor3View
-    EXPECT_EQ( t3_2(0, 0, 0), 2.0);
-    EXPECT_EQ( t3_2(0, 0, 1), -3.2);
-    EXPECT_EQ( t3_2(0, 1, 0), -6.9);
-    EXPECT_EQ( t3_2(0, 1, 1), -2.1);
-    EXPECT_EQ( t3_2(1, 0, 0), -2.5);
-    EXPECT_EQ( t3_2(1, 0, 1), -2.8);
-    EXPECT_EQ( t3_2(1, 1, 0), -1.7);
-    EXPECT_EQ( t3_2(1, 1, 1), 0.3);
-    EXPECT_EQ( t3_2(2, 0, 0), 0.3);
-    EXPECT_EQ( t3_2(2, 0, 1), -1.9);
-    EXPECT_EQ( t3_2(2, 1, 0), 9.2);
-    EXPECT_EQ( t3_2(2, 1, 1), -7.7);
+    EXPECT_EQ( t3_2( 0, 0, 0 ), 2.0 );
+    EXPECT_EQ( t3_2( 0, 0, 1 ), -3.2 );
+    EXPECT_EQ( t3_2( 0, 1, 0 ), -6.9 );
+    EXPECT_EQ( t3_2( 0, 1, 1 ), -2.1 );
+    EXPECT_EQ( t3_2( 1, 0, 0 ), -2.5 );
+    EXPECT_EQ( t3_2( 1, 0, 1 ), -2.8 );
+    EXPECT_EQ( t3_2( 1, 1, 0 ), -1.7 );
+    EXPECT_EQ( t3_2( 1, 1, 1 ), 0.3 );
+    EXPECT_EQ( t3_2( 2, 0, 0 ), 0.3 );
+    EXPECT_EQ( t3_2( 2, 0, 1 ), -1.9 );
+    EXPECT_EQ( t3_2( 2, 1, 0 ), 9.2 );
+    EXPECT_EQ( t3_2( 2, 1, 1 ), -7.7 );
 
-    auto t3_3 = t.block(":", ":", ":", 0);
+    auto t3_3 = t.block( ":", ":", ":", 0 );
     // Expect a <3,4,2> shaped Tensor3View
-    EXPECT_EQ( t3_3(0, 0, 0), 2.3);
-    EXPECT_EQ( t3_3(0, 0, 1), 4.0);
-    EXPECT_EQ( t3_3(0, 1, 0), 2.0);
-    EXPECT_EQ( t3_3(0, 1, 1), -6.9);
-    EXPECT_EQ( t3_3(0, 2, 0), -8.3);
-    EXPECT_EQ( t3_3(0, 2, 1), 3.3);
-    EXPECT_EQ( t3_3(0, 3, 0), 1.4);
-    EXPECT_EQ( t3_3(0, 3, 1), -5.2);
-    EXPECT_EQ( t3_3(1, 0, 0), 7.2);
-    EXPECT_EQ( t3_3(1, 0, 1), 4.6);
-    EXPECT_EQ( t3_3(1, 1, 0), -2.5);
-    EXPECT_EQ( t3_3(1, 1, 1), -1.7);
-    EXPECT_EQ( t3_3(1, 2, 0), 3.1);
-    EXPECT_EQ( t3_3(1, 2, 1), 0.6);
-    EXPECT_EQ( t3_3(1, 3, 0), -7.7);
-    EXPECT_EQ( t3_3(1, 3, 1), -9.2);
-    EXPECT_EQ( t3_3(2, 0, 0), -9.0);
-    EXPECT_EQ( t3_3(2, 0, 1), 7.5);
-    EXPECT_EQ( t3_3(2, 1, 0), 0.3);
-    EXPECT_EQ( t3_3(2, 1, 1), 9.2);
-    EXPECT_EQ( t3_3(2, 2, 0), -3.5);
-    EXPECT_EQ( t3_3(2, 2, 1), 3.9);
-    EXPECT_EQ( t3_3(2, 3, 0), 4.0);
-    EXPECT_EQ( t3_3(2, 3, 1), -6.5);
+    EXPECT_EQ( t3_3( 0, 0, 0 ), 2.3 );
+    EXPECT_EQ( t3_3( 0, 0, 1 ), 4.0 );
+    EXPECT_EQ( t3_3( 0, 1, 0 ), 2.0 );
+    EXPECT_EQ( t3_3( 0, 1, 1 ), -6.9 );
+    EXPECT_EQ( t3_3( 0, 2, 0 ), -8.3 );
+    EXPECT_EQ( t3_3( 0, 2, 1 ), 3.3 );
+    EXPECT_EQ( t3_3( 0, 3, 0 ), 1.4 );
+    EXPECT_EQ( t3_3( 0, 3, 1 ), -5.2 );
+    EXPECT_EQ( t3_3( 1, 0, 0 ), 7.2 );
+    EXPECT_EQ( t3_3( 1, 0, 1 ), 4.6 );
+    EXPECT_EQ( t3_3( 1, 1, 0 ), -2.5 );
+    EXPECT_EQ( t3_3( 1, 1, 1 ), -1.7 );
+    EXPECT_EQ( t3_3( 1, 2, 0 ), 3.1 );
+    EXPECT_EQ( t3_3( 1, 2, 1 ), 0.6 );
+    EXPECT_EQ( t3_3( 1, 3, 0 ), -7.7 );
+    EXPECT_EQ( t3_3( 1, 3, 1 ), -9.2 );
+    EXPECT_EQ( t3_3( 2, 0, 0 ), -9.0 );
+    EXPECT_EQ( t3_3( 2, 0, 1 ), 7.5 );
+    EXPECT_EQ( t3_3( 2, 1, 0 ), 0.3 );
+    EXPECT_EQ( t3_3( 2, 1, 1 ), 9.2 );
+    EXPECT_EQ( t3_3( 2, 2, 0 ), -3.5 );
+    EXPECT_EQ( t3_3( 2, 2, 1 ), 3.9 );
+    EXPECT_EQ( t3_3( 2, 3, 0 ), 4.0 );
+    EXPECT_EQ( t3_3( 2, 3, 1 ), -6.5 );
 
-    auto t3_4 = t.block(":", ":", 1, ":");
+    auto t3_4 = t.block( ":", ":", 1, ":" );
     // Expect a <3,4,2> shaped Tensor3View
-    EXPECT_EQ( t3_4(0, 0, 0), 4.0);
-    EXPECT_EQ( t3_4(0, 0, 1), 8.7);
-    EXPECT_EQ( t3_4(0, 1, 0), -6.9);
-    EXPECT_EQ( t3_4(0, 1, 1), -2.1);
-    EXPECT_EQ( t3_4(0, 2, 0), 3.3);
-    EXPECT_EQ( t3_4(0, 2, 1), -4.4);
-    EXPECT_EQ( t3_4(0, 3, 0), -5.2);
-    EXPECT_EQ( t3_4(0, 3, 1), -9.1);
-    EXPECT_EQ( t3_4(1, 0, 0), 4.6);
-    EXPECT_EQ( t3_4(1, 0, 1), 8.8);
-    EXPECT_EQ( t3_4(1, 1, 0), -1.7);
-    EXPECT_EQ( t3_4(1, 1, 1), 0.3);
-    EXPECT_EQ( t3_4(1, 2, 0), 0.6);
-    EXPECT_EQ( t3_4(1, 2, 1), -4.8);
-    EXPECT_EQ( t3_4(1, 3, 0), -9.2);
-    EXPECT_EQ( t3_4(1, 3, 1), 3.1);
-    EXPECT_EQ( t3_4(2, 0, 0), 7.5);
-    EXPECT_EQ( t3_4(2, 0, 1), 3.4);
-    EXPECT_EQ( t3_4(2, 1, 0), 9.2);
-    EXPECT_EQ( t3_4(2, 1, 1), -7.7);
-    EXPECT_EQ( t3_4(2, 2, 0), 3.9);
-    EXPECT_EQ( t3_4(2, 2, 1), 2.9);
-    EXPECT_EQ( t3_4(2, 3, 0), -6.5);
-    EXPECT_EQ( t3_4(2, 3, 1), -8.2);
+    EXPECT_EQ( t3_4( 0, 0, 0 ), 4.0 );
+    EXPECT_EQ( t3_4( 0, 0, 1 ), 8.7 );
+    EXPECT_EQ( t3_4( 0, 1, 0 ), -6.9 );
+    EXPECT_EQ( t3_4( 0, 1, 1 ), -2.1 );
+    EXPECT_EQ( t3_4( 0, 2, 0 ), 3.3 );
+    EXPECT_EQ( t3_4( 0, 2, 1 ), -4.4 );
+    EXPECT_EQ( t3_4( 0, 3, 0 ), -5.2 );
+    EXPECT_EQ( t3_4( 0, 3, 1 ), -9.1 );
+    EXPECT_EQ( t3_4( 1, 0, 0 ), 4.6 );
+    EXPECT_EQ( t3_4( 1, 0, 1 ), 8.8 );
+    EXPECT_EQ( t3_4( 1, 1, 0 ), -1.7 );
+    EXPECT_EQ( t3_4( 1, 1, 1 ), 0.3 );
+    EXPECT_EQ( t3_4( 1, 2, 0 ), 0.6 );
+    EXPECT_EQ( t3_4( 1, 2, 1 ), -4.8 );
+    EXPECT_EQ( t3_4( 1, 3, 0 ), -9.2 );
+    EXPECT_EQ( t3_4( 1, 3, 1 ), 3.1 );
+    EXPECT_EQ( t3_4( 2, 0, 0 ), 7.5 );
+    EXPECT_EQ( t3_4( 2, 0, 1 ), 3.4 );
+    EXPECT_EQ( t3_4( 2, 1, 0 ), 9.2 );
+    EXPECT_EQ( t3_4( 2, 1, 1 ), -7.7 );
+    EXPECT_EQ( t3_4( 2, 2, 0 ), 3.9 );
+    EXPECT_EQ( t3_4( 2, 2, 1 ), 2.9 );
+    EXPECT_EQ( t3_4( 2, 3, 0 ), -6.5 );
+    EXPECT_EQ( t3_4( 2, 3, 1 ), -8.2 );
 
-    auto m2_1 = t.slice(":", ":", 0, 0);
+    auto m2_1 = t.slice( ":", ":", 0, 0 );
     // Expect a <3,4> shaped MatrixView
-    EXPECT_EQ( m2_1(0, 0), 2.3);
-    EXPECT_EQ( m2_1(0, 1), 2.0);
-    EXPECT_EQ( m2_1(0, 2), -8.3);
-    EXPECT_EQ( m2_1(0, 3), 1.4);
-    EXPECT_EQ( m2_1(1, 0), 7.2);
-    EXPECT_EQ( m2_1(1, 1), -2.5);
-    EXPECT_EQ( m2_1(1, 2), 3.1);
-    EXPECT_EQ( m2_1(1, 3), -7.7);
-    EXPECT_EQ( m2_1(2, 0), -9.0);
-    EXPECT_EQ( m2_1(2, 1), 0.3);
-    EXPECT_EQ( m2_1(2, 2), -3.5);
-    EXPECT_EQ( m2_1(2, 3), 4.0);
+    EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
+    EXPECT_EQ( m2_1( 0, 2 ), -8.3 );
+    EXPECT_EQ( m2_1( 0, 3 ), 1.4 );
+    EXPECT_EQ( m2_1( 1, 0 ), 7.2 );
+    EXPECT_EQ( m2_1( 1, 1 ), -2.5 );
+    EXPECT_EQ( m2_1( 1, 2 ), 3.1 );
+    EXPECT_EQ( m2_1( 1, 3 ), -7.7 );
+    EXPECT_EQ( m2_1( 2, 0 ), -9.0 );
+    EXPECT_EQ( m2_1( 2, 1 ), 0.3 );
+    EXPECT_EQ( m2_1( 2, 2 ), -3.5 );
+    EXPECT_EQ( m2_1( 2, 3 ), 4.0 );
 
-    auto m2_2 = t.slice(":", 0, ":", 0);
+    auto m2_2 = t.slice( ":", 0, ":", 0 );
     // Expect a <3,2> shaped MatrixView
-    EXPECT_EQ( m2_2(0, 0), 2.3);
-    EXPECT_EQ( m2_2(0, 1), 4.0);
-    EXPECT_EQ( m2_2(1, 0), 7.2);
-    EXPECT_EQ( m2_2(1, 1), 4.6);
-    EXPECT_EQ( m2_2(2, 0), -9.0);
-    EXPECT_EQ( m2_2(2, 1), 7.5);
+    EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_2( 0, 1 ), 4.0 );
+    EXPECT_EQ( m2_2( 1, 0 ), 7.2 );
+    EXPECT_EQ( m2_2( 1, 1 ), 4.6 );
+    EXPECT_EQ( m2_2( 2, 0 ), -9.0 );
+    EXPECT_EQ( m2_2( 2, 1 ), 7.5 );
 
-    auto m2_3 = t.slice(0, ":", ":", 0);
+    auto m2_3 = t.slice( 0, ":", ":", 0 );
     // Expect a <4,2> shaped MatrixView
-    EXPECT_EQ( m2_3(0, 0), 2.3);
-    EXPECT_EQ( m2_3(0, 1), 4.0);
-    EXPECT_EQ( m2_3(1, 0), 2.0);
-    EXPECT_EQ( m2_3(1, 1), -6.9);
-    EXPECT_EQ( m2_3(2, 0), -8.3);
-    EXPECT_EQ( m2_3(2, 1), 3.3);
-    EXPECT_EQ( m2_3(3, 0), 1.4);
-    EXPECT_EQ( m2_3(3, 1), -5.2);
+    EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_3( 0, 1 ), 4.0 );
+    EXPECT_EQ( m2_3( 1, 0 ), 2.0 );
+    EXPECT_EQ( m2_3( 1, 1 ), -6.9 );
+    EXPECT_EQ( m2_3( 2, 0 ), -8.3 );
+    EXPECT_EQ( m2_3( 2, 1 ), 3.3 );
+    EXPECT_EQ( m2_3( 3, 0 ), 1.4 );
+    EXPECT_EQ( m2_3( 3, 1 ), -5.2 );
 
-    auto m2_4 = t.slice(0, ":", 0, ":");
+    auto m2_4 = t.slice( 0, ":", 0, ":" );
     // Expect a <4,2> shaped MatrixView
-    EXPECT_EQ( m2_4(0, 0), 2.3);
-    EXPECT_EQ( m2_4(0, 1), -1.1);
-    EXPECT_EQ( m2_4(1, 0), 2.0);
-    EXPECT_EQ( m2_4(1, 1), -3.2);
-    EXPECT_EQ( m2_4(2, 0), -8.3);
-    EXPECT_EQ( m2_4(2, 1), -9.1);
-    EXPECT_EQ( m2_4(3, 0), 1.4);
-    EXPECT_EQ( m2_4(3, 1), 5.8);
+    EXPECT_EQ( m2_4( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_4( 0, 1 ), -1.1 );
+    EXPECT_EQ( m2_4( 1, 0 ), 2.0 );
+    EXPECT_EQ( m2_4( 1, 1 ), -3.2 );
+    EXPECT_EQ( m2_4( 2, 0 ), -8.3 );
+    EXPECT_EQ( m2_4( 2, 1 ), -9.1 );
+    EXPECT_EQ( m2_4( 3, 0 ), 1.4 );
+    EXPECT_EQ( m2_4( 3, 1 ), 5.8 );
 
-    auto m2_5 = t.slice(0, 0, ":", ":");
+    auto m2_5 = t.slice( 0, 0, ":", ":" );
     // Expect a <2,2> shaped MatrixView
-    EXPECT_EQ( m2_5(0, 0), 2.3);
-    EXPECT_EQ( m2_5(0, 1), -1.1);
-    EXPECT_EQ( m2_5(1, 0), 4.0);
-    EXPECT_EQ( m2_5(1, 1), 8.7);
+    EXPECT_EQ( m2_5( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_5( 0, 1 ), -1.1 );
+    EXPECT_EQ( m2_5( 1, 0 ), 4.0 );
+    EXPECT_EQ( m2_5( 1, 1 ), 8.7 );
 
-    auto m2_6 = t.slice(":", 0, 0, ":");
+    auto m2_6 = t.slice( ":", 0, 0, ":" );
     // Expect a <3,2> shaped MatrixView
-    EXPECT_EQ( m2_6(0, 0), 2.3);
-    EXPECT_EQ( m2_6(0, 1), -1.1);
-    EXPECT_EQ( m2_6(1, 0), 7.2);
-    EXPECT_EQ( m2_6(1, 1), 4.5);
-    EXPECT_EQ( m2_6(2, 0), -9.0);
-    EXPECT_EQ( m2_6(2, 1), 8.2);
+    EXPECT_EQ( m2_6( 0, 0 ), 2.3 );
+    EXPECT_EQ( m2_6( 0, 1 ), -1.1 );
+    EXPECT_EQ( m2_6( 1, 0 ), 7.2 );
+    EXPECT_EQ( m2_6( 1, 1 ), 4.5 );
+    EXPECT_EQ( m2_6( 2, 0 ), -9.0 );
+    EXPECT_EQ( m2_6( 2, 1 ), 8.2 );
 
-
-    auto v1 = t.vector(0, 0, 0, ":");
+    auto v1 = t.vector( 0, 0, 0, ":" );
     // Expect a <2> shaped VectorView
-    EXPECT_EQ( v1(0), 2.3 );
-    EXPECT_EQ( v1(1), -1.1 );
+    EXPECT_EQ( v1( 0 ), 2.3 );
+    EXPECT_EQ( v1( 1 ), -1.1 );
 
-    auto v1_1 = t.vector(2, 2, 1, ":");
+    auto v1_1 = t.vector( 2, 2, 1, ":" );
     // Expect a <2> shaped VectorView
-    EXPECT_EQ( v1_1(0), 3.9);
-    EXPECT_EQ( v1_1(1), 2.9);
+    EXPECT_EQ( v1_1( 0 ), 3.9 );
+    EXPECT_EQ( v1_1( 1 ), 2.9 );
 
-    auto v1_2 = t.vector(0, 0, ":", 0);
+    auto v1_2 = t.vector( 0, 0, ":", 0 );
     // Expect a <2> shaped VectorView
-    EXPECT_EQ( v1_2(0), 2.3);
-    EXPECT_EQ( v1_2(1), 4.0);
+    EXPECT_EQ( v1_2( 0 ), 2.3 );
+    EXPECT_EQ( v1_2( 1 ), 4.0 );
 
-    auto v1_3 = t.vector(0, ":", 0, 0);
+    auto v1_3 = t.vector( 0, ":", 0, 0 );
     // Expect a <4> shaped VectorView
-    EXPECT_EQ( v1_3(0), 2.3);
-    EXPECT_EQ( v1_3(1), 2.0);
-    EXPECT_EQ( v1_3(2), -8.3);
-    EXPECT_EQ( v1_3(3), 1.4);
+    EXPECT_EQ( v1_3( 0 ), 2.3 );
+    EXPECT_EQ( v1_3( 1 ), 2.0 );
+    EXPECT_EQ( v1_3( 2 ), -8.3 );
+    EXPECT_EQ( v1_3( 3 ), 1.4 );
 
-    auto v1_4 = t.vector(":", 0, 0, 0);
+    auto v1_4 = t.vector( ":", 0, 0, 0 );
     // Expect a <3> shaped VectorView
-    EXPECT_EQ( v1_4(0), 2.3);
-    EXPECT_EQ( v1_4(1), 7.2);
-    EXPECT_EQ( v1_4(2), -9.0);
+    EXPECT_EQ( v1_4( 0 ), 2.3 );
+    EXPECT_EQ( v1_4( 1 ), 7.2 );
+    EXPECT_EQ( v1_4( 2 ), -9.0 );
 
-    auto v1_5 = t.vector(":", 2, 1, 0);
+    auto v1_5 = t.vector( ":", 2, 1, 0 );
     // Expect a <3> shaped VectorView
-    EXPECT_EQ( v1_5(0), 3.3);
-    EXPECT_EQ( v1_5(1), 0.6);
-    EXPECT_EQ( v1_5(2), 3.9);
+    EXPECT_EQ( v1_5( 0 ), 3.3 );
+    EXPECT_EQ( v1_5( 1 ), 0.6 );
+    EXPECT_EQ( v1_5( 2 ), 3.9 );
 
     // Check scalar assignment and () operator
     t = 43.3;
