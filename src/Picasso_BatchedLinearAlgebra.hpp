@@ -2249,24 +2249,89 @@ struct Tensor4
 
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, N> row( const int n ) const
+    VectorView<T, M> vector( std::string, const int n, const int p, const int q ) const
     {
-        return VectorView<T, N>( const_cast<T*>( &_d[n][0] ), 1 );
+        return VectorView<T, M>( const_cast<T*>( &_d[0][n][p][q] ), N * P * Q );
     }
-
-    // Get a column as a vector view.
+    // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, M> column( const int n ) const
+    VectorView<T, N> vector( const int m, std::string, const int p, const int q ) const
     {
-        return VectorView<T, M>( const_cast<T*>( &_d[0][n] ), N );
+        return VectorView<T, N>( const_cast<T*>( &_d[m][0][p][q] ), P * Q );
+    } // Get a row as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, P> vector( const int m, const int n, std::string, const int q ) const
+    {
+        return VectorView<T, P>( const_cast<T*>( &_d[m][n][0][q] ), Q );
+    } // Get a row as a vector view.
+    KOKKOS_INLINE_FUNCTION
+    VectorView<T, Q> vector( const int m, const int n, const int p,
+                             std::string ) const
+    {
+        return VectorView<T, Q>( const_cast<T*>( &_d[m][n][p][0] ), 1 );
     }
 
-    // // Get a slice as a matrix view.
-    // KOKKOS_INLINE_FUNCTION
-    // MatrixView<T, M, N> slice( const int p) const
-    // {
-    //     return MatrixView<T, M, N>( const_cast<T*>( &_d[]) );
-    // }
+    // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, M, N> slice( std::string, std::string, const int p, const int q ) const
+    {
+        return MatrixView<T, M, N>( const_cast<T*>( &_d[0][0][p][q] ), N * P * Q, P * Q);
+    }
+        // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, M, P> slice( std::string, const int n, std::string, const int q ) const
+    {
+        return MatrixView<T, M, P>( const_cast<T*>( &_d[0][n][0][q] ), N * P * Q, Q );
+    }
+        // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, N, P> slice( const int m, std::string, std::string, const int q ) const
+    {
+        return MatrixView<T, N, P>( const_cast<T*>( &_d[m][0][0][q] ), P * Q, Q );
+    }
+        // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, M, Q> slice( std::string, const int n, const int p, std::string ) const
+    {
+        return MatrixView<T, M, Q>( const_cast<T*>( &_d[0][n][p][0] ), N * P * Q, 1 );
+    }
+        // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, N, Q> slice( const int m, std::string, const int p, std::string ) const
+    {
+        return MatrixView<T, N, Q>( const_cast<T*>( &_d[m][0][p][0] ), P * Q, 1 );
+    }
+        // Get a slice as a matrix view.
+    KOKKOS_INLINE_FUNCTION
+    MatrixView<T, P, Q> slice( const int m, const int n, std::string, std::string ) const
+    {
+        return MatrixView<T, P, Q>( const_cast<T*>( &_d[m][n][0][0] ), Q, 1 );
+    }
+
+    // Get a block as a Tensor3 view.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View<T, M, N, P> block( std::string, std::string, std::string, const int b )
+    {
+        return Tensor3View<T,M,N,P>( const_cast<T*> ( &_d[0][0][0][b] ), N, P * Q, Q );
+    }
+    // Get a block as a Tensor3 view.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View<T, M, N, Q> block( std::string, std::string, const int b, std::string )
+    {
+        return Tensor3View<T,M,N,Q>( const_cast<T*> ( &_d[0][0][b][0] ), N, P * Q, 1 );
+    }
+    // Get a block as a Tensor3 view.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View<T, M, P, Q> block( std::string, const int b, std::string, std::string )
+    {
+        return Tensor3View<T,M,P,Q>( const_cast<T*> ( &_d[0][b][0][0] ), N * P, Q, 1 );
+    }
+    // Get a block as a Tensor3 view.
+    KOKKOS_INLINE_FUNCTION
+    Tensor3View<T, N, P, Q> block( const int b, std::string, std::string, std::string )
+    {
+        return Tensor3View<T,N,P,Q>( const_cast<T*> ( &_d[b][0][0][0] ), P, Q, 1 );
+    }
 };
 
 //---------------------------------------------------------------------------//
