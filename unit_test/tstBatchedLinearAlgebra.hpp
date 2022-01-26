@@ -297,7 +297,7 @@ void tensor3Test()
     EXPECT_EQ( t( 2, 3, 0 ), 4.0 );
     EXPECT_EQ( t( 2, 3, 1 ), 1.4 );
 
-    auto m2_1 = t.slice( ":", ":", 0 );
+    auto m2_1 = t.matrix( ":", ":", 0 );
     EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
     EXPECT_EQ( m2_1( 0, 2 ), -8.3 );
@@ -311,7 +311,7 @@ void tensor3Test()
     EXPECT_EQ( m2_1( 2, 2 ), -3.5 );
     EXPECT_EQ( m2_1( 2, 3 ), 4.0 );
 
-    auto m2_2 = t.slice( ":", 0, ":" );
+    auto m2_2 = t.matrix( ":", 0, ":" );
     EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_2( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_2( 1, 0 ), 7.2 );
@@ -319,7 +319,7 @@ void tensor3Test()
     EXPECT_EQ( m2_2( 2, 0 ), -9.0 );
     EXPECT_EQ( m2_2( 2, 1 ), 8.2 );
 
-    auto m2_3 = t.slice( 0, ":", ":" );
+    auto m2_3 = t.matrix( 0, ":", ":" );
     EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_3( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_3( 1, 0 ), 2.0 );
@@ -647,7 +647,7 @@ void tensor4Test()
 
     // Test general slicing operations
 
-    auto t3_1 = t.block( 1, ":", ":", ":" );
+    auto t3_1 = t.tensor3( 1, ":", ":", ":" );
     // Expect a <4,2,2> shaped Tensor3View
     EXPECT_EQ( t3_1( 0, 0, 0 ), 7.2 );
     EXPECT_EQ( t3_1( 0, 0, 1 ), 4.5 );
@@ -666,7 +666,7 @@ void tensor4Test()
     EXPECT_EQ( t3_1( 3, 1, 0 ), -9.2 );
     EXPECT_EQ( t3_1( 3, 1, 1 ), 3.1 );
 
-    auto t3_2 = t.block( ":", 1, ":", ":" );
+    auto t3_2 = t.tensor3( ":", 1, ":", ":" );
     // Expect a <3,2,2> shaped Tensor3View
     EXPECT_EQ( t3_2( 0, 0, 0 ), 2.0 );
     EXPECT_EQ( t3_2( 0, 0, 1 ), -3.2 );
@@ -681,7 +681,7 @@ void tensor4Test()
     EXPECT_EQ( t3_2( 2, 1, 0 ), 9.2 );
     EXPECT_EQ( t3_2( 2, 1, 1 ), -7.7 );
 
-    auto t3_3 = t.block( ":", ":", ":", 0 );
+    auto t3_3 = t.tensor3( ":", ":", ":", 0 );
     // Expect a <3,4,2> shaped Tensor3View
     EXPECT_EQ( t3_3( 0, 0, 0 ), 2.3 );
     EXPECT_EQ( t3_3( 0, 0, 1 ), 4.0 );
@@ -708,7 +708,7 @@ void tensor4Test()
     EXPECT_EQ( t3_3( 2, 3, 0 ), 4.0 );
     EXPECT_EQ( t3_3( 2, 3, 1 ), -6.5 );
 
-    auto t3_4 = t.block( ":", ":", 1, ":" );
+    auto t3_4 = t.tensor3( ":", ":", 1, ":" );
     // Expect a <3,4,2> shaped Tensor3View
     EXPECT_EQ( t3_4( 0, 0, 0 ), 4.0 );
     EXPECT_EQ( t3_4( 0, 0, 1 ), 8.7 );
@@ -735,7 +735,7 @@ void tensor4Test()
     EXPECT_EQ( t3_4( 2, 3, 0 ), -6.5 );
     EXPECT_EQ( t3_4( 2, 3, 1 ), -8.2 );
 
-    auto m2_1 = t.slice( ":", ":", 0, 0 );
+    auto m2_1 = t.matrix( ":", ":", 0, 0 );
     // Expect a <3,4> shaped MatrixView
     EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
@@ -750,7 +750,7 @@ void tensor4Test()
     EXPECT_EQ( m2_1( 2, 2 ), -3.5 );
     EXPECT_EQ( m2_1( 2, 3 ), 4.0 );
 
-    auto m2_2 = t.slice( ":", 0, ":", 0 );
+    auto m2_2 = t.matrix( ":", 0, ":", 0 );
     // Expect a <3,2> shaped MatrixView
     EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_2( 0, 1 ), 4.0 );
@@ -759,7 +759,7 @@ void tensor4Test()
     EXPECT_EQ( m2_2( 2, 0 ), -9.0 );
     EXPECT_EQ( m2_2( 2, 1 ), 7.5 );
 
-    auto m2_3 = t.slice( 0, ":", ":", 0 );
+    auto m2_3 = t.matrix( 0, ":", ":", 0 );
     // Expect a <4,2> shaped MatrixView
     EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_3( 0, 1 ), 4.0 );
@@ -770,7 +770,7 @@ void tensor4Test()
     EXPECT_EQ( m2_3( 3, 0 ), 1.4 );
     EXPECT_EQ( m2_3( 3, 1 ), -5.2 );
 
-    auto m2_4 = t.slice( 0, ":", 0, ":" );
+    auto m2_4 = t.matrix( 0, ":", 0, ":" );
     // Expect a <4,2> shaped MatrixView
     EXPECT_EQ( m2_4( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_4( 0, 1 ), -1.1 );
@@ -781,14 +781,14 @@ void tensor4Test()
     EXPECT_EQ( m2_4( 3, 0 ), 1.4 );
     EXPECT_EQ( m2_4( 3, 1 ), 5.8 );
 
-    auto m2_5 = t.slice( 0, 0, ":", ":" );
+    auto m2_5 = t.matrix( 0, 0, ":", ":" );
     // Expect a <2,2> shaped MatrixView
     EXPECT_EQ( m2_5( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_5( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_5( 1, 0 ), 4.0 );
     EXPECT_EQ( m2_5( 1, 1 ), 8.7 );
 
-    auto m2_6 = t.slice( ":", 0, 0, ":" );
+    auto m2_6 = t.matrix( ":", 0, 0, ":" );
     // Expect a <3,2> shaped MatrixView
     EXPECT_EQ( m2_6( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_6( 0, 1 ), -1.1 );
