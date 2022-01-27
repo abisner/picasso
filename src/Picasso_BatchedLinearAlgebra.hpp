@@ -1718,38 +1718,38 @@ struct Tensor3
 
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, M> vector( std::string, const int n, const int p ) const
+    VectorView<T, M> vector( const Kokkos::Impl::ALL_t, const int n, const int p ) const
     {
         return VectorView<T, M>( const_cast<T*>( &_d[0][n][p] ), N * P );
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, N> vector( const int m, std::string, const int p ) const
+    VectorView<T, N> vector( const int m, const Kokkos::Impl::ALL_t, const int p ) const
     {
         return VectorView<T, N>( const_cast<T*>( &_d[m][0][p] ), P );
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, P> vector( const int m, const int n, std::string ) const
+    VectorView<T, P> vector( const int m, const int n, const Kokkos::Impl::ALL_t ) const
     {
         return VectorView<T, P>( const_cast<T*>( &_d[m][n][0] ), 1 );
     }
 
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, N> matrix( std::string, std::string, const int p ) const
+    MatrixView<T, M, N> matrix( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int p ) const
     {
         return MatrixView<T, M, N>( const_cast<T*>( &_d[0][0][p] ), N * P, P );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, P> matrix( std::string, const int n, std::string ) const
+    MatrixView<T, M, P> matrix( const Kokkos::Impl::ALL_t, const int n, const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, M, P>( const_cast<T*>( &_d[0][n][0] ), N * P, 1 );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, P> matrix( const int m, std::string, std::string ) const
+    MatrixView<T, N, P> matrix( const int m, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, N, P>( const_cast<T*>( &_d[m][0][0] ), P, 1 );
     }
@@ -1956,14 +1956,14 @@ struct Tensor3View
 
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, M> vector( std::string, const int n, const int p ) const
+    VectorView<T, M> vector( const Kokkos::Impl::ALL_t, const int n, const int p ) const
     {
         return VectorView<T, M>(
             const_cast<T*>( &_d[_stride[1] * n + _stride[2] * p] ), N * P );
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, N> vector( const int m, std::string, const int p ) const
+    VectorView<T, N> vector( const int m, const Kokkos::Impl::ALL_t, const int p ) const
     {
         return VectorView<T, N>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * m + _stride[2] * p] ),
@@ -1971,7 +1971,7 @@ struct Tensor3View
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, P> vector( const int m, const int n, std::string ) const
+    VectorView<T, P> vector( const int m, const int n, const Kokkos::Impl::ALL_t ) const
     {
         return VectorView<T, P>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * m + _stride[1] * n] ),
@@ -1980,21 +1980,21 @@ struct Tensor3View
 
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, N> matrix( std::string, std::string, const int p ) const
+    MatrixView<T, M, N> matrix( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int p ) const
     {
         return MatrixView<T, M, N>( const_cast<T*>( &_d[_stride[2] * p] ),
                                     N * P, P );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, P> matrix( std::string, const int n, std::string ) const
+    MatrixView<T, M, P> matrix( const Kokkos::Impl::ALL_t, const int n, const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, M, P>( const_cast<T*>( &_d[_stride[1] * n] ),
                                     N * P, 1 );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, P> matrix( const int m, std::string, std::string ) const
+    MatrixView<T, N, P> matrix( const int m, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, N, P>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * m] ), P, 1 );
@@ -2288,34 +2288,34 @@ struct Tensor4
 
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, M> vector( std::string, const int n, const int p,
+    VectorView<T, M> vector( const Kokkos::Impl::ALL_t, const int n, const int p,
                              const int q ) const
     {
         return VectorView<T, M>( const_cast<T*>( &_d[0][n][p][q] ), N * P * Q );
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, N> vector( const int m, std::string, const int p,
+    VectorView<T, N> vector( const int m, const Kokkos::Impl::ALL_t, const int p,
                              const int q ) const
     {
         return VectorView<T, N>( const_cast<T*>( &_d[m][0][p][q] ), P * Q );
     } // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, P> vector( const int m, const int n, std::string,
+    VectorView<T, P> vector( const int m, const int n, const Kokkos::Impl::ALL_t,
                              const int q ) const
     {
         return VectorView<T, P>( const_cast<T*>( &_d[m][n][0][q] ), Q );
     } // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
     VectorView<T, Q> vector( const int m, const int n, const int p,
-                             std::string ) const
+                             const Kokkos::Impl::ALL_t ) const
     {
         return VectorView<T, Q>( const_cast<T*>( &_d[m][n][p][0] ), 1 );
     }
 
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, N> matrix( std::string, std::string, const int p,
+    MatrixView<T, M, N> matrix( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int p,
                                 const int q ) const
     {
         return MatrixView<T, M, N>( const_cast<T*>( &_d[0][0][p][q] ),
@@ -2323,7 +2323,7 @@ struct Tensor4
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, P> matrix( std::string, const int n, std::string,
+    MatrixView<T, M, P> matrix( const Kokkos::Impl::ALL_t, const int n, const Kokkos::Impl::ALL_t,
                                 const int q ) const
     {
         return MatrixView<T, M, P>( const_cast<T*>( &_d[0][n][0][q] ),
@@ -2331,7 +2331,7 @@ struct Tensor4
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, P> matrix( const int m, std::string, std::string,
+    MatrixView<T, N, P> matrix( const int m, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
                                 const int q ) const
     {
         return MatrixView<T, N, P>( const_cast<T*>( &_d[m][0][0][q] ), P * Q,
@@ -2339,31 +2339,31 @@ struct Tensor4
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, Q> matrix( std::string, const int n, const int p,
-                                std::string ) const
+    MatrixView<T, M, Q> matrix( const Kokkos::Impl::ALL_t, const int n, const int p,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, M, Q>( const_cast<T*>( &_d[0][n][p][0] ),
                                     N * P * Q, 1 );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, Q> matrix( const int m, std::string, const int p,
-                                std::string ) const
+    MatrixView<T, N, Q> matrix( const int m, const Kokkos::Impl::ALL_t, const int p,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, N, Q>( const_cast<T*>( &_d[m][0][p][0] ), P * Q,
                                     1 );
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, P, Q> matrix( const int m, const int n, std::string,
-                                std::string ) const
+    MatrixView<T, P, Q> matrix( const int m, const int n, const Kokkos::Impl::ALL_t,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, P, Q>( const_cast<T*>( &_d[m][n][0][0] ), Q, 1 );
     }
 
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, N, P> tensor3( std::string, std::string, std::string,
+    Tensor3View<T, M, N, P> tensor3( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
                                      const int b )
     {
         return Tensor3View<T, M, N, P>( const_cast<T*>( &_d[0][0][0][b] ), N,
@@ -2371,24 +2371,24 @@ struct Tensor4
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, N, Q> tensor3( std::string, std::string, const int b,
-                                     std::string )
+    Tensor3View<T, M, N, Q> tensor3( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int b,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, M, N, Q>( const_cast<T*>( &_d[0][0][b][0] ), N,
                                         P * Q, 1 );
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, P, Q> tensor3( std::string, const int b, std::string,
-                                     std::string )
+    Tensor3View<T, M, P, Q> tensor3( const Kokkos::Impl::ALL_t, const int b, const Kokkos::Impl::ALL_t,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, M, P, Q>( const_cast<T*>( &_d[0][b][0][0] ),
                                         N * P, Q, 1 );
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, N, P, Q> tensor3( const int b, std::string, std::string,
-                                     std::string )
+    Tensor3View<T, N, P, Q> tensor3( const int b, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, N, P, Q>( const_cast<T*>( &_d[b][0][0][0] ), P, Q,
                                         1 );
@@ -2630,7 +2630,7 @@ struct Tensor4View
 
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, M> vector( std::string, const int n, const int p,
+    VectorView<T, M> vector( const Kokkos::Impl::ALL_t, const int n, const int p,
                              const int q ) const
     {
         return VectorView<T, M>(
@@ -2640,7 +2640,7 @@ struct Tensor4View
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, N> vector( const int m, std::string, const int p,
+    VectorView<T, N> vector( const int m, const Kokkos::Impl::ALL_t, const int p,
                              const int q ) const
     {
         return VectorView<T, N>(
@@ -2650,7 +2650,7 @@ struct Tensor4View
     }
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
-    VectorView<T, P> vector( const int m, const int n, std::string,
+    VectorView<T, P> vector( const int m, const int n, const Kokkos::Impl::ALL_t,
                              const int q ) const
     {
         return VectorView<T, P>(
@@ -2661,7 +2661,7 @@ struct Tensor4View
     // Get a row as a vector view.
     KOKKOS_INLINE_FUNCTION
     VectorView<T, Q> vector( const int m, const int n, const int p,
-                             std::string ) const
+                             const Kokkos::Impl::ALL_t ) const
     {
         return VectorView<T, Q>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * _stride[2] * m +
@@ -2671,7 +2671,7 @@ struct Tensor4View
 
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, N> matrix( std::string, std::string, const int p,
+    MatrixView<T, M, N> matrix( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int p,
                                 const int q ) const
     {
         return MatrixView<T, M, N>(
@@ -2680,7 +2680,7 @@ struct Tensor4View
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, P> matrix( std::string, const int n, std::string,
+    MatrixView<T, M, P> matrix( const Kokkos::Impl::ALL_t, const int n, const Kokkos::Impl::ALL_t,
                                 const int q ) const
     {
         return MatrixView<T, M, P>(
@@ -2689,7 +2689,7 @@ struct Tensor4View
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, P> matrix( const int m, std::string, std::string,
+    MatrixView<T, N, P> matrix( const int m, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
                                 const int q ) const
     {
         return MatrixView<T, N, P>(
@@ -2699,8 +2699,8 @@ struct Tensor4View
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, M, Q> matrix( std::string, const int n, const int p,
-                                std::string ) const
+    MatrixView<T, M, Q> matrix( const Kokkos::Impl::ALL_t, const int n, const int p,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, M, Q>(
             const_cast<T*>( &_d[_stride[1] * _stride[2] * n + _stride[2] * p] ),
@@ -2708,8 +2708,8 @@ struct Tensor4View
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, N, Q> matrix( const int m, std::string, const int p,
-                                std::string ) const
+    MatrixView<T, N, Q> matrix( const int m, const Kokkos::Impl::ALL_t, const int p,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, N, Q>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * _stride[2] * m +
@@ -2718,8 +2718,8 @@ struct Tensor4View
     }
     // Get a matrix as a matrix view.
     KOKKOS_INLINE_FUNCTION
-    MatrixView<T, P, Q> matrix( const int m, const int n, std::string,
-                                std::string ) const
+    MatrixView<T, P, Q> matrix( const int m, const int n, const Kokkos::Impl::ALL_t,
+                                const Kokkos::Impl::ALL_t ) const
     {
         return MatrixView<T, P, Q>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * _stride[2] * m +
@@ -2729,7 +2729,7 @@ struct Tensor4View
 
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, N, P> tensor3( std::string, std::string, std::string,
+    Tensor3View<T, M, N, P> tensor3( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
                                      const int b )
     {
         return Tensor3View<T, M, N, P>( const_cast<T*>( &_d[_stride[3] * b] ),
@@ -2737,24 +2737,24 @@ struct Tensor4View
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, N, Q> tensor3( std::string, std::string, const int b,
-                                     std::string )
+    Tensor3View<T, M, N, Q> tensor3( const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t, const int b,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, M, N, Q>( const_cast<T*>( &_d[_stride[2] * b] ),
                                         N, P * Q, 1 );
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, M, P, Q> tensor3( std::string, const int b, std::string,
-                                     std::string )
+    Tensor3View<T, M, P, Q> tensor3( const Kokkos::Impl::ALL_t, const int b, const Kokkos::Impl::ALL_t,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, M, P, Q>(
             const_cast<T*>( &_d[_stride[1] * _stride[2] * b] ), N * P, Q, 1 );
     }
     // Get a tensor3 as a Tensor3 view.
     KOKKOS_INLINE_FUNCTION
-    Tensor3View<T, N, P, Q> tensor3( const int b, std::string, std::string,
-                                     std::string )
+    Tensor3View<T, N, P, Q> tensor3( const int b, const Kokkos::Impl::ALL_t, const Kokkos::Impl::ALL_t,
+                                     const Kokkos::Impl::ALL_t )
     {
         return Tensor3View<T, N, P, Q>(
             const_cast<T*>( &_d[_stride[0] * _stride[1] * _stride[2] * b] ), P,
