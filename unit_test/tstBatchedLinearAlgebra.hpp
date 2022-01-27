@@ -257,7 +257,7 @@ void matrixTest()
 void tensor3Test()
 {
     using Kokkos::ALL;
-    
+
     // Check a basic Tensor3
     LinearAlgebra::Tensor3<double, 3, 4, 2> t = {
         { { 2.3, -1.1 }, { 2.0, -3.2 }, { -8.3, -9.1 }, { 1.4, 5.8 } },
