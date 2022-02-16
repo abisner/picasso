@@ -300,6 +300,9 @@ void tensor3Test()
     EXPECT_EQ( t( 2, 3, 1 ), 1.4 );
 
     auto m2_1 = t.matrix( ALL(), ALL(), 0 );
+    EXPECT_EQ( m2_1.extent( 0 ), 3 );
+    EXPECT_EQ( m2_1.extent( 1 ), 4 );
+
     EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
     EXPECT_EQ( m2_1( 0, 2 ), -8.3 );
@@ -314,6 +317,9 @@ void tensor3Test()
     EXPECT_EQ( m2_1( 2, 3 ), 4.0 );
 
     auto m2_2 = t.matrix( ALL(), 0, ALL() );
+    EXPECT_EQ( m2_2.extent( 0 ), 3 );
+    EXPECT_EQ( m2_2.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_2( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_2( 1, 0 ), 7.2 );
@@ -322,6 +328,9 @@ void tensor3Test()
     EXPECT_EQ( m2_2( 2, 1 ), 8.2 );
 
     auto m2_3 = t.matrix( 0, ALL(), ALL() );
+    EXPECT_EQ( m2_3.extent( 0 ), 4 );
+    EXPECT_EQ( m2_3.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_3( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_3( 1, 0 ), 2.0 );
@@ -332,17 +341,23 @@ void tensor3Test()
     EXPECT_EQ( m2_3( 3, 1 ), 5.8 );
 
     auto v1_1 = t.vector( ALL(), 0, 0 );
+    EXPECT_EQ( v1_1.extent( 0 ), 3 );
+
     EXPECT_EQ( v1_1( 0 ), 2.3 );
     EXPECT_EQ( v1_1( 1 ), 7.2 );
     EXPECT_EQ( v1_1( 2 ), -9.0 );
 
     auto v1_2 = t.vector( 0, ALL(), 0 );
+    EXPECT_EQ( v1_2.extent( 0 ), 4 );
+
     EXPECT_EQ( v1_2( 0 ), 2.3 );
     EXPECT_EQ( v1_2( 1 ), 2.0 );
     EXPECT_EQ( v1_2( 2 ), -8.3 );
     EXPECT_EQ( v1_2( 3 ), 1.4 );
 
     auto v1_3 = t.vector( 0, 0, ALL() );
+    EXPECT_EQ( v1_3.extent( 0 ), 2 );
+
     EXPECT_EQ( v1_3( 0 ), 2.3 );
     EXPECT_EQ( v1_3( 1 ), -1.1 );
 
@@ -653,6 +668,10 @@ void tensor4Test()
 
     auto t3_1 = t.tensor3( 1, ALL(), ALL(), ALL() );
     // Expect a <4,2,2> shaped Tensor3View
+    EXPECT_EQ( t3_1.extent( 0 ), 4 );
+    EXPECT_EQ( t3_1.extent( 1 ), 2 );
+    EXPECT_EQ( t3_1.extent( 2 ), 2 );
+
     EXPECT_EQ( t3_1( 0, 0, 0 ), 7.2 );
     EXPECT_EQ( t3_1( 0, 0, 1 ), 4.5 );
     EXPECT_EQ( t3_1( 0, 1, 0 ), 4.6 );
@@ -672,6 +691,10 @@ void tensor4Test()
 
     auto t3_2 = t.tensor3( ALL(), 1, ALL(), ALL() );
     // Expect a <3,2,2> shaped Tensor3View
+    EXPECT_EQ( t3_2.extent( 0 ), 3 );
+    EXPECT_EQ( t3_2.extent( 1 ), 2 );
+    EXPECT_EQ( t3_2.extent( 2 ), 2 );
+
     EXPECT_EQ( t3_2( 0, 0, 0 ), 2.0 );
     EXPECT_EQ( t3_2( 0, 0, 1 ), -3.2 );
     EXPECT_EQ( t3_2( 0, 1, 0 ), -6.9 );
@@ -687,6 +710,10 @@ void tensor4Test()
 
     auto t3_3 = t.tensor3( ALL(), ALL(), ALL(), 0 );
     // Expect a <3,4,2> shaped Tensor3View
+    EXPECT_EQ( t3_3.extent( 0 ), 3 );
+    EXPECT_EQ( t3_3.extent( 1 ), 4 );
+    EXPECT_EQ( t3_3.extent( 2 ), 2 );
+
     EXPECT_EQ( t3_3( 0, 0, 0 ), 2.3 );
     EXPECT_EQ( t3_3( 0, 0, 1 ), 4.0 );
     EXPECT_EQ( t3_3( 0, 1, 0 ), 2.0 );
@@ -714,6 +741,10 @@ void tensor4Test()
 
     auto t3_4 = t.tensor3( ALL(), ALL(), 1, ALL() );
     // Expect a <3,4,2> shaped Tensor3View
+    EXPECT_EQ( t3_4.extent( 0 ), 3 );
+    EXPECT_EQ( t3_4.extent( 1 ), 4 );
+    EXPECT_EQ( t3_4.extent( 2 ), 2 );
+
     EXPECT_EQ( t3_4( 0, 0, 0 ), 4.0 );
     EXPECT_EQ( t3_4( 0, 0, 1 ), 8.7 );
     EXPECT_EQ( t3_4( 0, 1, 0 ), -6.9 );
@@ -741,6 +772,9 @@ void tensor4Test()
 
     auto m2_1 = t.matrix( ALL(), ALL(), 0, 0 );
     // Expect a <3,4> shaped MatrixView
+    EXPECT_EQ( m2_1.extent( 0 ), 3 );
+    EXPECT_EQ( m2_1.extent( 1 ), 4 );
+
     EXPECT_EQ( m2_1( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_1( 0, 1 ), 2.0 );
     EXPECT_EQ( m2_1( 0, 2 ), -8.3 );
@@ -756,6 +790,9 @@ void tensor4Test()
 
     auto m2_2 = t.matrix( ALL(), 0, ALL(), 0 );
     // Expect a <3,2> shaped MatrixView
+    EXPECT_EQ( m2_2.extent( 0 ), 3 );
+    EXPECT_EQ( m2_2.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_2( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_2( 0, 1 ), 4.0 );
     EXPECT_EQ( m2_2( 1, 0 ), 7.2 );
@@ -765,6 +802,9 @@ void tensor4Test()
 
     auto m2_3 = t.matrix( 0, ALL(), ALL(), 0 );
     // Expect a <4,2> shaped MatrixView
+    EXPECT_EQ( m2_3.extent( 0 ), 4 );
+    EXPECT_EQ( m2_3.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_3( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_3( 0, 1 ), 4.0 );
     EXPECT_EQ( m2_3( 1, 0 ), 2.0 );
@@ -776,6 +816,9 @@ void tensor4Test()
 
     auto m2_4 = t.matrix( 0, ALL(), 0, ALL() );
     // Expect a <4,2> shaped MatrixView
+    EXPECT_EQ( m2_4.extent( 0 ), 4 );
+    EXPECT_EQ( m2_4.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_4( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_4( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_4( 1, 0 ), 2.0 );
@@ -787,6 +830,9 @@ void tensor4Test()
 
     auto m2_5 = t.matrix( 0, 0, ALL(), ALL() );
     // Expect a <2,2> shaped MatrixView
+    EXPECT_EQ( m2_5.extent( 0 ), 2 );
+    EXPECT_EQ( m2_5.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_5( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_5( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_5( 1, 0 ), 4.0 );
@@ -794,6 +840,9 @@ void tensor4Test()
 
     auto m2_6 = t.matrix( ALL(), 0, 0, ALL() );
     // Expect a <3,2> shaped MatrixView
+    EXPECT_EQ( m2_6.extent( 0 ), 3 );
+    EXPECT_EQ( m2_6.extent( 1 ), 2 );
+
     EXPECT_EQ( m2_6( 0, 0 ), 2.3 );
     EXPECT_EQ( m2_6( 0, 1 ), -1.1 );
     EXPECT_EQ( m2_6( 1, 0 ), 7.2 );
@@ -803,21 +852,29 @@ void tensor4Test()
 
     auto v1 = t.vector( 0, 0, 0, ALL() );
     // Expect a <2> shaped VectorView
+    EXPECT_EQ( v1.extent( 0 ), 2 );
+
     EXPECT_EQ( v1( 0 ), 2.3 );
     EXPECT_EQ( v1( 1 ), -1.1 );
 
     auto v1_1 = t.vector( 2, 2, 1, ALL() );
     // Expect a <2> shaped VectorView
+    EXPECT_EQ( v1_1.extent( 0 ), 2 );
+
     EXPECT_EQ( v1_1( 0 ), 3.9 );
     EXPECT_EQ( v1_1( 1 ), 2.9 );
 
     auto v1_2 = t.vector( 0, 0, ALL(), 0 );
     // Expect a <2> shaped VectorView
+    EXPECT_EQ( v1_2.extent( 0 ), 2 );
+
     EXPECT_EQ( v1_2( 0 ), 2.3 );
     EXPECT_EQ( v1_2( 1 ), 4.0 );
 
     auto v1_3 = t.vector( 0, ALL(), 0, 0 );
     // Expect a <4> shaped VectorView
+    EXPECT_EQ( v1_3.extent( 0 ), 4 );
+
     EXPECT_EQ( v1_3( 0 ), 2.3 );
     EXPECT_EQ( v1_3( 1 ), 2.0 );
     EXPECT_EQ( v1_3( 2 ), -8.3 );
@@ -825,12 +882,16 @@ void tensor4Test()
 
     auto v1_4 = t.vector( ALL(), 0, 0, 0 );
     // Expect a <3> shaped VectorView
+    EXPECT_EQ( v1_4.extent( 0 ), 3 );
+
     EXPECT_EQ( v1_4( 0 ), 2.3 );
     EXPECT_EQ( v1_4( 1 ), 7.2 );
     EXPECT_EQ( v1_4( 2 ), -9.0 );
 
     auto v1_5 = t.vector( ALL(), 2, 1, 0 );
     // Expect a <3> shaped VectorView
+    EXPECT_EQ( v1_5.extent( 0 ), 3 );
+
     EXPECT_EQ( v1_5( 0 ), 3.3 );
     EXPECT_EQ( v1_5( 1 ), 0.6 );
     EXPECT_EQ( v1_5( 2 ), 3.9 );
