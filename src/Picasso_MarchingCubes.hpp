@@ -57,7 +57,7 @@ template <class MemorySpace> struct Data {
       MemorySpace,
       Cabana::Impl::PerformanceTraits<
           typename MemorySpace::execution_space>::vector_length,
-      Field::PhysicalPosition<3>>
+      Field::PhysicalPosition<3>, Field::VertexNormal<3>>
       vertices;
 
   Kokkos::View<int *, MemorySpace> num_neighbors;

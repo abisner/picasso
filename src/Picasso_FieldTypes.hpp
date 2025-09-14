@@ -883,87 +883,84 @@ struct Tensor4ViewWrapper
 //---------------------------------------------------------------------------//
 template <class View, class Layout>
 auto createViewWrapper(
-    Layout, const View& view,
-    std::enable_if_t<Field::is_scalar<typename Layout::tag>::value, int*> = 0 )
-{
-    return ScalarViewWrapper<View, Layout>( view );
+    Layout, const View &view,
+    std::enable_if_t<Field::is_scalar<typename Layout::tag>::value, int *> =
+        0) {
+  return ScalarViewWrapper<View, Layout>(view);
 }
 
 template <class View, class Layout>
 auto createViewWrapper(
-    Layout, const View& view,
-    std::enable_if_t<Field::is_vector<typename Layout::tag>::value, int*> = 0 )
-{
-    return VectorViewWrapper<View, Layout>( view );
+    Layout, const View &view,
+    std::enable_if_t<Field::is_vector<typename Layout::tag>::value, int *> =
+        0) {
+  return VectorViewWrapper<View, Layout>(view);
 }
 
 template <class View, class Layout>
 auto createViewWrapper(
-    Layout, const View& view,
-    std::enable_if_t<Field::is_matrix<typename Layout::tag>::value, int*> = 0 )
-{
-    return MatrixViewWrapper<View, Layout>( view );
+    Layout, const View &view,
+    std::enable_if_t<Field::is_matrix<typename Layout::tag>::value, int *> =
+        0) {
+  return MatrixViewWrapper<View, Layout>(view);
 }
 
 template <class View, class Layout>
 auto createViewWrapper(
-    Layout, const View& view,
-    std::enable_if_t<Field::is_tensor3<typename Layout::tag>::value, int*> = 0 )
-{
-    return Tensor3ViewWrapper<View, Layout>( view );
+    Layout, const View &view,
+    std::enable_if_t<Field::is_tensor3<typename Layout::tag>::value, int *> =
+        0) {
+  return Tensor3ViewWrapper<View, Layout>(view);
 }
 
 template <class View, class Layout>
 auto createViewWrapper(
-    Layout, const View& view,
-    std::enable_if_t<Field::is_tensor4<typename Layout::tag>::value, int*> = 0 )
-{
-    return Tensor4ViewWrapper<View, Layout>( view );
+    Layout, const View &view,
+    std::enable_if_t<Field::is_tensor4<typename Layout::tag>::value, int *> =
+        0) {
+  return Tensor4ViewWrapper<View, Layout>(view);
 }
 
 //---------------------------------------------------------------------------//
 // Fields
 //---------------------------------------------------------------------------//
 template <std::size_t NumSpaceDim>
-struct PhysicalPosition : Vector<double, NumSpaceDim>
-{
-    static std::string label() { return "physical_position"; }
+struct PhysicalPosition : Vector<double, NumSpaceDim> {
+  static std::string label() { return "physical_position"; }
 };
 
 template <std::size_t NumSpaceDim>
-struct LogicalPosition : Vector<double, NumSpaceDim>
-{
-    static std::string label() { return "logical_position"; }
+struct LogicalPosition : Vector<double, NumSpaceDim> {
+  static std::string label() { return "logical_position"; }
 };
 
-struct SignedDistance : Scalar<double>
-{
-    static std::string label() { return "signed_distance"; }
+struct SignedDistance : Scalar<double> {
+  static std::string label() { return "signed_distance"; }
 };
 
-struct DistanceEstimate : Scalar<double>
-{
-    static std::string label() { return "distance_estimate"; }
+struct DistanceEstimate : Scalar<double> {
+  static std::string label() { return "distance_estimate"; }
 };
 
-struct Color : Scalar<int>
-{
-    static std::string label() { return "color"; }
+template <std::size_t NumSpaceDim>
+struct VertexNormal : Vector<double, NumSpaceDim> {
+  static std::string label() { return "vertex_normal"; }
 };
 
-struct VolumeId : Scalar<int>
-{
-    static std::string label() { return "volume_id"; }
+struct Color : Scalar<int> {
+  static std::string label() { return "color"; }
 };
 
-struct BoundaryId : Scalar<int>
-{
-    static std::string label() { return "boundary_id"; }
+struct VolumeId : Scalar<int> {
+  static std::string label() { return "volume_id"; }
 };
 
-struct CommRank : Scalar<int>
-{
-    static std::string label() { return "comm_rank"; }
+struct BoundaryId : Scalar<int> {
+  static std::string label() { return "boundary_id"; }
+};
+
+struct CommRank : Scalar<int> {
+  static std::string label() { return "comm_rank"; }
 };
 
 //---------------------------------------------------------------------------//
