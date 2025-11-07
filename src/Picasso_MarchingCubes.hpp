@@ -774,6 +774,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
         result += num_facet;
       },
       data.num_facet);
+  Kokkos::fence();
 
   // Allocate facet data if necessary.
   if (data.num_facet > static_cast<int>(data.facets.extent(0)) ||
@@ -803,6 +804,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
         }
         update += value;
       });
+  Kokkos::fence();
 
   data.edge_cache.clear();
   data.edge_cache = Kokkos::UnorderedMap<int, int>(24000);
@@ -837,6 +839,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
           }
         }
       });
+  Kokkos::fence();
 
   // Enumerate the map
   Kokkos::View<int> edge_count("edge_count");
@@ -853,6 +856,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
           data.edge_cache.insert(key, ec, atomic_add);
         }
       });
+  Kokkos::fence();
 
   Kokkos::View<Kokkos::Array<int, 2> *, MemorySpace> facet_edges(
       "facet_edges", data.num_facet * 6);
@@ -923,6 +927,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
           }
         }
       });
+  Kokkos::fence();
 
   // Perform a lexicographical sort on edge vertex ids
   Kokkos::sort(
@@ -931,6 +936,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
                     const Kokkos::Array<int, 2> &b) {
         return a[0] == b[0] ? a[1] < b[1] : a[0] < b[0];
       });
+  Kokkos::fence();
 
   // Get the unique key/value edges using builtin Array == comparison
   auto unique_end = Kokkos::Experimental::unique(exec_space, facet_edges);
@@ -952,6 +958,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
       KOKKOS_LAMBDA(const int i) {
         Kokkos::atomic_inc(&data.num_neighbors(facet_edges(i)[0]));
       });
+  Kokkos::fence();
 
   // Compute the neighbor offsets to be used with the CRS list
   Kokkos::parallel_scan(
@@ -963,6 +970,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
         }
         update += val; // exclusive scan
       });
+  Kokkos::fence();
 
   // Copy the final neighbor list
   Kokkos::parallel_for(
@@ -970,6 +978,7 @@ void build(const ExecutionSpace &exec_space, const Mesh &mesh,
       KOKKOS_LAMBDA(const int i) {
         data.neighbor_list(i) = facet_edges(i)[1];
       });
+  Kokkos::fence();
 
   // auto facet_edges_h =
   //     Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace{},
